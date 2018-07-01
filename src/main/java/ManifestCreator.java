@@ -1,6 +1,6 @@
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Vector;
 
 public class ManifestCreator {
@@ -23,7 +23,13 @@ public class ManifestCreator {
         fileLenVec.add(-1L);
         if (dir.exists() && dir.isDirectory()) {
             dirList = dir.listFiles();
-            Arrays.sort(dirList);
+            Arrays.sort(dirList, new Comparator<File>() {
+                public int compare(File f1, File f2) {
+                    String f1name = f1.getName();
+                    String f2name = f2.getName();
+                    return Utility.getIdFromSegmentName(f1name) - Utility.getIdFromSegmentName(f2name);
+                }
+            });
             if (dirList != null) {
                 for (File f : dirList) {
                     fileLenVec.add(f.length());
@@ -53,7 +59,7 @@ public class ManifestCreator {
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-                this.fileLenVec.add(Long.parseLong(line));
+                this.fileLenVec.add(Long.parseLong(line) + 10);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -69,7 +75,7 @@ public class ManifestCreator {
     public void write(String path) throws FileNotFoundException, UnsupportedEncodingException {
         PrintWriter writer = new PrintWriter(path, "UTF-8");
         for (long len : fileLenVec) {
-            System.out.println(len);
+//            System.out.println(len);
             writer.println(Long.toString(len));
         }
         writer.close();

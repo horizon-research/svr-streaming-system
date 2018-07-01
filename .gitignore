@@ -1,3 +1,4 @@
 tmp/
 manifest*
 *.class
+.idea/uiDesigner.xml

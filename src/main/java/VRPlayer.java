@@ -39,7 +39,7 @@ public class VRPlayer implements Runnable {
             try {
                 Socket clientSock = ss.accept();
                 if (this.gotManifest) {
-                    saveFile(clientSock);
+                    saveVideoSegment(clientSock);
                 } else {
                     saveManifest(clientSock);
                     this.gotManifest = true;
@@ -81,7 +81,7 @@ public class VRPlayer implements Runnable {
      * @param clientSock
      * @throws IOException
      */
-    private void saveFile(Socket clientSock) throws IOException {
+    private void saveVideoSegment(Socket clientSock) throws IOException {
         DataInputStream dis = new DataInputStream(clientSock.getInputStream());
         FileOutputStream fos = new FileOutputStream(Utility.getSegmentName("tmp", "segment", snb));
         byte[] buffer = new byte[4096];
