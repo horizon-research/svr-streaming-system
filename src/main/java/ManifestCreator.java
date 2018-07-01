@@ -1,0 +1,86 @@
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.Arrays;
+import java.util.Vector;
+
+public class ManifestCreator {
+
+    private File dir;
+    private File[] dirList;
+    private Vector<Long> fileLenVec;
+
+    /**
+     * Get the file size of all the video segments in the specified path.
+     * The filename of video segments in the path should follow the pattern: path/name_{num}.mp4
+     * @param path should be a dir
+     */
+    public ManifestCreator(String path, String filename, String ext) {
+        // init
+        dir = new File(path);
+        fileLenVec = new Vector<Long>();
+
+        // fill fileLenVec
+        fileLenVec.add(-1L);
+        if (dir.exists() && dir.isDirectory()) {
+            dirList = dir.listFiles();
+            Arrays.sort(dirList);
+            if (dirList != null) {
+                for (File f : dirList) {
+                    fileLenVec.add(f.length());
+                }
+            } else {
+                System.err.println(path + " do not have any video segments.");
+                System.exit(1);
+            }
+        } else {
+            System.err.println(path + " should be a directory!");
+            System.exit(1);
+        }
+    }
+
+    /**
+     * Construct manifest object from file
+     * @param filename is the path to the manifest file
+     */
+    public ManifestCreator(String filename) {
+        // init
+        this.fileLenVec = new Vector<Long>();
+
+        // fill fileLenVec
+        File file = new File(filename);
+        try {
+            FileReader fileReader = new FileReader(file);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                this.fileLenVec.add(Long.parseLong(line));
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Write manifest to the specified file
+     * @param path the path of the manifest file
+     */
+    public void write(String path) throws FileNotFoundException, UnsupportedEncodingException {
+        PrintWriter writer = new PrintWriter(path, "UTF-8");
+        for (long len : fileLenVec) {
+            System.out.println(len);
+            writer.println(Long.toString(len));
+        }
+        writer.close();
+    }
+
+    public long getVideoSegmentLength(int i) {
+        assert (i > 0);
+        return fileLenVec.get(i);
+    }
+
+    public int getVideoSegmentAmount() {
+        return fileLenVec.size() - 1;
+    }
+}

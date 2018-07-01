@@ -1,11 +1,7 @@
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
-import java.util.Vector;
 
-public class VRServer {
+public class ContentDispatcher {
 
     private Socket s;
     private String videoSegmentDir;
@@ -15,12 +11,13 @@ public class VRServer {
     private DataOutputStream dos;
 
     /**
+     * Dispatch video segments to VRPlayer
      * @param host
      * @param port
      * @param path
-     * @param filename-
+     * @param filename
      */
-    public VRServer(String host, int port, String path, String filename, int snb) {
+    public ContentDispatcher(String host, int port, String path, String filename, int snb) {
         // init
         this.videoSegmentDir = path;
         this.filename = filename;
@@ -37,7 +34,22 @@ public class VRServer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    /**
+     * Dispatch manifest file to VRPlayer
+     * @param host
+     * @param port
+     * @param path
+     */
+    public ContentDispatcher(String host, int port, String path) {
+        // setup tcp file transfer
+        try {
+            s = new Socket(host, port);
+            sendFile(path);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -61,15 +73,22 @@ public class VRServer {
     }
 
     /**
-     * Usage java VRServer <directory> <filename>
-     *     the file name in the directory will be constructed as <filename>_number.mp4
+     * Usage java ContentDispatcher <dir> <filename>
+     * The file name in the dir will be constructed as <filename>_number.mp4.
      * @param args
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
+        ManifestCreator manifestCreator = new ManifestCreator("storage/rhino/", "output", "mp4");
+        manifestCreator.write("manifest-server.txt");
         File dir = new File(args[0]);
+
         if (dir.exists() && dir.isDirectory()) {
-            for (int i = 1; i < 10; i++) {
-                VRServer vrServer = new VRServer("localhost", 1988, args[0], args[1], i);
+            // send manifest
+            ContentDispatcher manifestServer = new ContentDispatcher("localhost", 1988, "manifest-server.txt");
+
+            // send video segments
+            for (int i = 1; i < manifestCreator.getVideoSegmentAmount(); i++) {
+                ContentDispatcher vsServer = new ContentDispatcher("localhost", 1988, args[0], args[1], i);
             }
         }
     }
