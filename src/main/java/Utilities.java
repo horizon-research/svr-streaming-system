@@ -1,5 +1,4 @@
-public class Utility {
-
+public class Utilities {
     public static String getSegmentName(String dir, String name, int i) {
         return dir + "/" + name + "_" + Integer.toString(i) + ".mp4";
     }

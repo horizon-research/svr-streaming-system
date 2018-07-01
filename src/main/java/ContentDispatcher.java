@@ -23,14 +23,14 @@ public class ContentDispatcher {
         this.filename = filename;
         this.snb = snb;
 
-        File file = new File(Utility.getSegmentName(videoSegmentDir, this.filename, snb));
+        File file = new File(Utilities.getSegmentName(videoSegmentDir, this.filename, snb));
         this.filelength = file.length();
         System.out.println(this.filelength);
 
         // setup tcp file transfer
         try {
             s = new Socket(host, port);
-            sendFile(Utility.getSegmentName(videoSegmentDir, this.filename, this.snb));
+            sendFile(Utilities.getSegmentName(videoSegmentDir, this.filename, this.snb));
         } catch (Exception e) {
             e.printStackTrace();
         }

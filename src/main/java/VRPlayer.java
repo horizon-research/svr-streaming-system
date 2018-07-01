@@ -83,13 +83,13 @@ public class VRPlayer implements Runnable {
      */
     private void saveVideoSegment(Socket clientSock) throws IOException {
         DataInputStream dis = new DataInputStream(clientSock.getInputStream());
-        FileOutputStream fos = new FileOutputStream(Utility.getSegmentName("tmp", "segment", snb));
+        FileOutputStream fos = new FileOutputStream(Utilities.getSegmentName("tmp", "segment", snb));
         byte[] buffer = new byte[4096];
         int read = 0;
         int totalRead = 0;
         int remaining = (int) this.manifestCreator.getVideoSegmentLength(this.snb);
 
-        System.out.println("Saving " + Utility.getSegmentName("","segment", snb));
+        System.out.println("Saving " + Utilities.getSegmentName("","segment", snb));
         while((read = dis.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
             totalRead += read;
             remaining -= read;

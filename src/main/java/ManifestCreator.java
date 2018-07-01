@@ -27,7 +27,7 @@ public class ManifestCreator {
                 public int compare(File f1, File f2) {
                     String f1name = f1.getName();
                     String f2name = f2.getName();
-                    return Utility.getIdFromSegmentName(f1name) - Utility.getIdFromSegmentName(f2name);
+                    return Utilities.getIdFromSegmentName(f1name) - Utilities.getIdFromSegmentName(f2name);
                 }
             });
             if (dirList != null) {
