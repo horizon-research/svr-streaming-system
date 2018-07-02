@@ -11,7 +11,7 @@ public class ContentDispatcher {
     private DataOutputStream dos;
 
     /**
-     * Dispatch video segments to VRPlayer
+     * Dispatch video segments to VRDownloader
      * @param host
      * @param port
      * @param path
@@ -37,7 +37,7 @@ public class ContentDispatcher {
     }
 
     /**
-     * Dispatch manifest file to VRPlayer
+     * Dispatch manifest file to VRDownloader
      * @param host
      * @param port
      * @param path
@@ -62,7 +62,7 @@ public class ContentDispatcher {
         FileInputStream fis = new FileInputStream(file);
         byte[] buffer = new byte[4096];
 
-        System.out.println("sendfile");
+        System.out.println("Send " + file + " from content dispatcher");
 
         while (fis.read(buffer) > 0) {
             dos.write(buffer);

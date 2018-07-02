@@ -1,109 +1,71 @@
-import java.io.DataInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-public class VRPlayer implements Runnable {
+public class VRPlayer {
+    private JFrame vrPlayerFrame = new JFrame("VRDownloader");
+    private JPanel mainPanel = new JPanel();
+    private JPanel buttonPanel = new JPanel();
+    private JLabel statLabel1 = new JLabel();
+    private JLabel statLabel2 = new JLabel();
+    private JLabel statLabel3 = new JLabel();
+    private JLabel iconLabel = new JLabel();
+    private ImageIcon icon;
+    private Timer timer;
+    private VRDownloader vrDownloader;
 
-    private ServerSocket ss;
-    private DataInputStream dis;
-    private int snb;
-    private boolean gotManifest;
-    private ManifestCreator manifestCreator;
-
-    /**
-     * Constructor of a VRPlayer that creating a socket for getting video segments.
-     *
-     * All the video segments and the manifest file downloaded by VRPlayer will be saved in 'tmp/'.
-     * The first call of savefile is the manifest file from ContentDispatcher and the following call
-     * of save file will be video segments.
-     *
-     * @param port
-     */
-    public VRPlayer(int port) {
-        // init instance variables
-        this.snb = 1;
-        this.gotManifest = false;
-
-        // setup tcp server socket for ContentDispatcher
-        try {
-            ss = new ServerSocket(port);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void run() {
-        while (true) {
-            try {
-                Socket clientSock = ss.accept();
-                if (this.gotManifest) {
-                    saveVideoSegment(clientSock);
-                } else {
-                    saveManifest(clientSock);
-                    this.gotManifest = true;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+    public VRPlayer() {
+        // setup frame
+        this.vrPlayerFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent windowEvent) {
+                super.windowOpened(windowEvent);
             }
-        }
+        });
+
+        //Image display label
+        iconLabel.setIcon(null);
+
+        //frame layout
+        mainPanel.setLayout(null);
+        mainPanel.add(iconLabel);
+        mainPanel.add(buttonPanel);
+        mainPanel.add(statLabel1);
+        mainPanel.add(statLabel2);
+        mainPanel.add(statLabel3);
+        iconLabel.setBounds(0, 0, 1280, 720);
+
+        vrPlayerFrame.getContentPane().add(mainPanel, BorderLayout.CENTER);
+        vrPlayerFrame.setSize(new Dimension(1280, 720));
+        vrPlayerFrame.setVisible(true);
+
+
+        timer = new Timer(5, new VRPlayer.timerListener());
+        timer.setInitialDelay(0);
+        timer.setCoalesce(true);
+
+        vrDownloader = new VRDownloader(1988);
+
+        // start downloading video segments in a new thread
+        Thread vrDownloaderThd = new Thread(vrDownloader);
+        vrDownloaderThd.start();
+
+        timer.start();
     }
 
     /**
-     * Save manifest from ContentDispatcher.
-     * @param clientSock
-     * @throws IOException
+     * Render the frames from Picture queue
      */
-    private void saveManifest(Socket clientSock) throws IOException {
-        DataInputStream dis = new DataInputStream(clientSock.getInputStream());
-        FileOutputStream fos = new FileOutputStream("manifest-client.txt");
-        byte[] buffer = new byte[4096];
-
-        int read = 0;
-        int totalRead = 0;
-        int remaining = 1402;
-        while((read = dis.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
-            totalRead += read;
-            remaining -= read;
-            System.out.println("read " + totalRead + " bytes.");
-            fos.write(buffer, 0, read);
+    private class timerListener implements ActionListener {
+        public void actionPerformed(ActionEvent actionEvent) {
+            System.out.println("snb: " + vrDownloader.getSegmentNb());
         }
-
-        this.manifestCreator = new ManifestCreator("manifest-client.txt");
-
-        fos.close();
-        dis.close();
-    }
-
-    /**
-     * Save video segment from ContentDispatcher.
-     * @param clientSock
-     * @throws IOException
-     */
-    private void saveVideoSegment(Socket clientSock) throws IOException {
-        DataInputStream dis = new DataInputStream(clientSock.getInputStream());
-        FileOutputStream fos = new FileOutputStream(Utilities.getSegmentName("tmp", "segment", snb));
-        byte[] buffer = new byte[4096];
-        int read = 0;
-        int totalRead = 0;
-        int remaining = (int) this.manifestCreator.getVideoSegmentLength(this.snb);
-
-        System.out.println("Saving " + Utilities.getSegmentName("","segment", snb));
-        while((read = dis.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
-            totalRead += read;
-            remaining -= read;
-            System.out.println("read " + totalRead + " bytes.");
-            fos.write(buffer, 0, read);
-        }
-
-        fos.close();
-        dis.close();
-        this.snb++;
     }
 
     public static void main(String[] args) {
-        VRPlayer vrPlayer = new VRPlayer(1988);
-        vrPlayer.run();
+        VRPlayer vrPlayer = new VRPlayer();
     }
 }
