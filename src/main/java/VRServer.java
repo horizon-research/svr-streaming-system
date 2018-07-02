@@ -8,7 +8,7 @@ public class VRServer implements Runnable {
     private String videoSegmentDir;
     private String filename;
     private boolean hasSentManifest;
-    private ManifestCreator manifestCreator;
+    private Manifest manifestCreator;
 
     /**
      * Dispatch manifest file to VRDownloader
@@ -61,7 +61,7 @@ public class VRServer implements Runnable {
                     }
                 } else {
                     this.hasSentManifest = true;
-                    manifestCreator = new ManifestCreator("storage/rhino/", "output", "mp4");
+                    manifestCreator = new Manifest("storage/rhino/", "output", "mp4");
                     manifestCreator.write("manifest-server.txt");
                     clientSock = ss.accept();
                     sendFile(clientSock, "manifest-server.txt");

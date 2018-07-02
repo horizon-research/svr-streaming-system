@@ -3,7 +3,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Vector;
 
-public class ManifestCreator {
+public class Manifest {
 
     private File dir;
     private File[] dirList;
@@ -14,7 +14,7 @@ public class ManifestCreator {
      * The filename of video segments in the path should follow the pattern: path/name_{num}.mp4
      * @param path should be a dir
      */
-    public ManifestCreator(String path, String filename, String ext) {
+    public Manifest(String path, String filename, String ext) {
         // init
         dir = new File(path);
         fileLenVec = new Vector<Long>();
@@ -48,7 +48,7 @@ public class ManifestCreator {
      * Construct manifest object from file
      * @param filename is the path to the manifest file
      */
-    public ManifestCreator(String filename) {
+    public Manifest(String filename) {
         // init
         this.fileLenVec = new Vector<Long>();
 
