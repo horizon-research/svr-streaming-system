@@ -16,6 +16,7 @@ public class VRPlayer {
     private ImageIcon icon;
     private Timer timer;
     private VRDownloader vrDownloader;
+    public ManifestCreator manifestCreator;
 
     public VRPlayer() {
         // setup frame
@@ -42,16 +43,31 @@ public class VRPlayer {
         vrPlayerFrame.setSize(new Dimension(1280, 720));
         vrPlayerFrame.setVisible(true);
 
-
         timer = new Timer(5, new VRPlayer.timerListener());
         timer.setInitialDelay(0);
         timer.setCoalesce(true);
 
-        vrDownloader = new VRDownloader(1988);
-
-        // start downloading video segments in a new thread
-        Thread vrDownloaderThd = new Thread(vrDownloader);
-        vrDownloaderThd.start();
+        // download video segment in a separate thread
+        VRDownloader vrDownloader = new VRDownloader("localhost", 1988, "manifest-client.txt");
+        Thread mthd = new Thread(vrDownloader);
+        mthd.start();
+        try {
+            mthd.join();
+            this.manifestCreator = new ManifestCreator("manifest-client.txt");
+            System.out.println("Successfully get manifest from Server");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        for (int i = 1; i < this.manifestCreator.getVideoSegmentAmount(); i++) {
+            vrDownloader = new VRDownloader("localhost", 1988, i, (int) this.manifestCreator.getVideoSegmentLength(i));
+            Thread vthd = new Thread(vrDownloader);
+            vthd.start();
+            try {
+                vthd.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
         timer.start();
     }
@@ -61,11 +77,12 @@ public class VRPlayer {
      */
     private class timerListener implements ActionListener {
         public void actionPerformed(ActionEvent actionEvent) {
-            System.out.println("snb: " + vrDownloader.getSegmentNb());
+//            System.out.println("snb: " + vrDownloader.getSegmentNb());
         }
     }
 
     public static void main(String[] args) {
         VRPlayer vrPlayer = new VRPlayer();
+        System.out.println("fff");
     }
 }

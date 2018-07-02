@@ -1,66 +1,68 @@
 import java.io.DataInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 public class VRDownloader implements Runnable {
-    private ServerSocket ss;
+    private String host;
+    private int port;
+    private int snb;
+    private int segLen;
     private Socket clientSock;
-    private int segmentNb;
-    private boolean gotManifest;
-    private ManifestCreator manifestCreator;
+    private boolean dlManifest;
+    private String manifestPath;
 
     /**
-     * Constructor of a VRDownloader that creating a socket for getting video segments.
-     *
-     * All the video segments and the manifest file downloaded by VRDownloader will be saved in 'tmp/'.
-     * The first call of savefile is the manifest file from ContentDispatcher and the following call
-     * of save file will be video segments.
-     *
+     * Setup for downloading a video segment.
      * @param port
      */
-    public VRDownloader(int port) {
+    public VRDownloader(String host, int port, int snb, int segLen) {
         // init instance variables
-        this.segmentNb = 1;
-        this.gotManifest = false;
+        this.host = host;
+        this.port = port;
+        this.dlManifest = false;
+        this.snb = snb;
+        this.segLen = segLen;
+    }
 
-        // setup tcp server socket for ContentDispatcher
+    /**
+     * Setup for downloading manifest file.
+     * @param host
+     * @param port
+     * @param path
+     */
+    public VRDownloader(String host, int port, String path) {
+        // init instance variables
+        this.host = host;
+        this.port = port;
+        this.manifestPath = path;
+        this.dlManifest = true;
+    }
+
+    /**
+     * Setup a TCP connection to VRServer and then download files from the server.
+     */
+    public void run() {
         try {
-            ss = new ServerSocket(port);
+            clientSock = new Socket(host, port);
+            if (dlManifest) {
+                saveManifest(clientSock);
+            } else {
+                saveVideoSegment(clientSock, snb, segLen);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void run() {
-        while (true) {
-            try {
-                clientSock = ss.accept();
-                if (this.gotManifest) {
-                    saveVideoSegment(clientSock);
-                } else {
-                    saveManifest(clientSock);
-                    this.gotManifest = true;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public int getSegmentNb() {
-        return this.segmentNb;
-    }
-
     /**
-     * Save manifest from ContentDispatcher.
+     * Save manifest from VRServer.
      * @param clientSock
      * @throws IOException
      */
     private void saveManifest(Socket clientSock) throws IOException {
         DataInputStream dis = new DataInputStream(clientSock.getInputStream());
-        FileOutputStream fos = new FileOutputStream("manifest-client.txt");
+        FileOutputStream fos = new FileOutputStream(manifestPath);
         byte[] buffer = new byte[4096];
 
         int read = 0;
@@ -72,27 +74,24 @@ public class VRDownloader implements Runnable {
             fos.write(buffer, 0, read);
         }
 
-        this.manifestCreator = new ManifestCreator("manifest-client.txt");
-        System.out.println("Successfully get manifest from Server");
-
         fos.close();
         dis.close();
     }
 
     /**
-     * Save video segment from ContentDispatcher.
+     * Save video segment from VRServer.
      * @param clientSock
      * @throws IOException
      */
-    private void saveVideoSegment(Socket clientSock) throws IOException {
+    private void saveVideoSegment(Socket clientSock, int snb, int segLen) throws IOException {
         DataInputStream dis = new DataInputStream(clientSock.getInputStream());
-        FileOutputStream fos = new FileOutputStream(Utilities.getSegmentName("tmp", "segment", segmentNb));
+        FileOutputStream fos = new FileOutputStream(Utilities.getSegmentName("tmp", "segment", snb));
         byte[] buffer = new byte[4096];
         int read = 0;
         int totalRead = 0;
-        int remaining = (int) this.manifestCreator.getVideoSegmentLength(this.segmentNb);
+        int remaining = (int) segLen;
 
-        System.out.println("Saving " + Utilities.getSegmentName("","segment", segmentNb));
+        System.out.println("Saving " + Utilities.getSegmentName("","segment", snb));
         while((read = dis.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
             totalRead += read;
             remaining -= read;
@@ -102,13 +101,12 @@ public class VRDownloader implements Runnable {
 
         /*
          * In this point we can decode the video segment into a queue and then
-         * render it from the timerListener.
+         * render it from the timerListener in VRPlayer.
          * So I'm going to use a worker thread to produce picture data from
          * the video segment.
          */
 
         fos.close();
         dis.close();
-        this.segmentNb++;
     }
 }
