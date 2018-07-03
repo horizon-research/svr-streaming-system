@@ -10,6 +10,9 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
 public class VRPlayer {
+    public Manifest manifestCreator;
+    private SegmentDecoder segmentDecoder;
+
     private String host;
     private int port;
     private String segmentPath;
@@ -19,11 +22,16 @@ public class VRPlayer {
     private JLabel iconLabel = new JLabel();
     private ImageIcon icon;
     private Timer timer;
-    private VRDownloader vrDownloader;
     private int currSegTop;     // indicate the top video segment id could be decoded
-    public Manifest manifestCreator;
-    private SegmentDecoder segmentDecoder;
 
+    /**
+     * Construct a VRPlayer object which manage GUI, video segment downloading, and video segment decoding
+     *
+     * @param host        host of VRServer
+     * @param port        port to VRServer
+     * @param segmentPath path to the storage of video segments in a temporary path like tmp/
+     * @param segFilename file name of video segment
+     */
     public VRPlayer(String host, int port, String segmentPath, String segFilename) {
         this.host = host;
         this.port = port;
@@ -76,10 +84,21 @@ public class VRPlayer {
         timer.start();
     }
 
+    /**
+     * getSegFilenameFromId.
+     *
+     * @param id id of video segment
+     * @return name of video segment
+     */
     public String getSegFilenameFromId(int id) {
         return Utilities.getSegmentName(segmentPath, segFilename, id);
     }
 
+    /**
+     * Get the largest segment id that has been downloaded.
+     *
+     * @return currSegTop
+     */
     public int getCurrSegTop() {
         return this.currSegTop;
     }
@@ -98,7 +117,7 @@ public class VRPlayer {
     }
 
     /**
-     * Render the frames from frame queue
+     * Render the frames from frame queue.
      */
     private class timerListener implements ActionListener {
         public void actionPerformed(ActionEvent actionEvent) {
@@ -108,11 +127,17 @@ public class VRPlayer {
                     BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
                     icon = new ImageIcon(bufferedImage);
                     iconLabel.setIcon(icon);
+                    System.out.println("Render icon");
                 }
             }
         }
     }
 
+    /**
+     * Execute the VRplayer.
+     *
+     * @param args command line args.
+     */
     public static void main(String[] args) {
         VRPlayer vrPlayer = new VRPlayer("localhost", 1988, "tmp", "segment");
     }

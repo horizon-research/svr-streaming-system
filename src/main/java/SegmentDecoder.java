@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Create a new thread to decode video segment into queue of pictures
+ * Create a new thread to decode video segment into queue of pictures.
  */
 public class SegmentDecoder implements Runnable {
     private VRPlayer vrPlayer;
@@ -18,8 +18,9 @@ public class SegmentDecoder implements Runnable {
     private ConcurrentLinkedQueue<Picture> frameQueue;
 
     /**
-     * Create a video segment decoder object to execute as a separate thread so that GUI wont hang
-     * @param vrPlayer reference to vrPlayer for using its currTopSeg
+     * Create a video segment decoder object to execute as a separate thread so that GUI wont hang.
+     *
+     * @param vrPlayer reference to vrPlayer for using its currTopSeg.
      */
     public SegmentDecoder(VRPlayer vrPlayer) {
         this.decodedSegTop = 0;
@@ -28,15 +29,16 @@ public class SegmentDecoder implements Runnable {
     }
 
     /**
-     * Get the concurrent frame queue that storing all the decoded video frames
-     * @return frameQueue
+     * Get the concurrent frame queue that storing all the decoded video frames.
+     *
+     * @return frameQueue.
      */
     public ConcurrentLinkedQueue<Picture> getFrameQueue() {
         return this.frameQueue;
     }
 
     /**
-     * Main logic of decoding "available" video segments
+     * Main logic of decoding "available" video segments.
      */
     public void run() {
         while (decodedSegTop < vrPlayer.manifestCreator.getVideoSegmentAmount()) {

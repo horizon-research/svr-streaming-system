@@ -3,6 +3,10 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Vector;
 
+/**
+ * This class handles the creation and parsing of manifest files. The manifest file includes the file size of all the
+ * video segments.
+ */
 public class Manifest {
 
     private File dir;
@@ -12,7 +16,10 @@ public class Manifest {
     /**
      * Get the file size of all the video segments in the specified path.
      * The filename of video segments in the path should follow the pattern: path/name_{num}.mp4
-     * @param path should be a dir
+     *
+     * @param path     should be a dir.
+     * @param filename name of manifest.
+     * @param ext      file extension of manifest file.
      */
     public Manifest(String path, String filename, String ext) {
         // init
@@ -45,8 +52,9 @@ public class Manifest {
     }
 
     /**
-     * Construct manifest object from file
-     * @param filename is the path to the manifest file
+     * Construct manifest object from file.
+     *
+     * @param filename is the path to the manifest file.
      */
     public Manifest(String filename) {
         // init
@@ -69,8 +77,11 @@ public class Manifest {
     }
 
     /**
-     * Write manifest to the specified file
-     * @param path the path of the manifest file
+     * Write manifest to the specified file.
+     *
+     * @param path the path of the manifest file.
+     * @throws FileNotFoundException        when the path not exists.
+     * @throws UnsupportedEncodingException when utf8 not supported.
      */
     public void write(String path) throws FileNotFoundException, UnsupportedEncodingException {
         PrintWriter writer = new PrintWriter(path, "UTF-8");
@@ -82,9 +93,10 @@ public class Manifest {
     }
 
     /**
-     * Get the file length of a specified video segment
-     * @param i identifier of video segment
-     * @return size of video segment
+     * Get the file length of a specified video segment.
+     *
+     * @param i identifier of video segment.
+     * @return size of video segment.
      */
     public long getVideoSegmentLength(int i) {
         assert (i > 0);
@@ -92,8 +104,9 @@ public class Manifest {
     }
 
     /**
-     * Get the total number of video segments
-     * @return the total of video segments
+     * Get the total number of video segments.
+     *
+     * @return the total of video segments.
      */
     public int getVideoSegmentAmount() {
         return fileLenVec.size() - 1;
