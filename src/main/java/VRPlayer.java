@@ -58,7 +58,7 @@ public class VRPlayer {
         vrPlayerFrame.setSize(new Dimension(1280, 720));
         vrPlayerFrame.setVisible(true);
 
-        timer = new Timer(30, new VRPlayer.timerListener());
+        timer = new Timer(10, new VRPlayer.timerListener());
         timer.setInitialDelay(0);
         timer.setCoalesce(true);
 
@@ -67,9 +67,9 @@ public class VRPlayer {
         currSegTop = 0;
 
         // download the manifest file sequentially and then create a thread to download all the video segments
-        VRDownloader vrDownloader = new VRDownloader(host, port, "manifest-client.txt");
+        Downloader vrDownloader = new Downloader(host, port, "manifest-client.txt");
         manifestCreator = new Manifest("manifest-client.txt");
-        SegmentDownloader downloader = new SegmentDownloader();
+        SegmentBatchDownloader downloader = new SegmentBatchDownloader();
         Thread downloadThd = new Thread(downloader);
         downloadThd.start();
 
@@ -106,11 +106,11 @@ public class VRPlayer {
     /**
      * All the file transfer happens in a separate thread in this inner class.
      */
-    private class SegmentDownloader implements Runnable {
+    private class SegmentBatchDownloader implements Runnable {
         // downloading video segment in a separate thread
         public void run() {
             for (int i = 1; i < manifestCreator.getVideoSegmentAmount(); i++) {
-                VRDownloader vrDownloader = new VRDownloader(host, port, segmentPath, segFilename, i, (int) manifestCreator.getVideoSegmentLength(i));
+                Downloader downloader = new Downloader(host, port, segmentPath, segFilename, i, (int) manifestCreator.getVideoSegmentLength(i));
                 currSegTop = i;
             }
         }

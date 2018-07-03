@@ -6,7 +6,7 @@ import java.net.Socket;
 /**
  * For VRPlayer to download manifest and video segments in a separate thread.
  */
-public class VRDownloader {
+public class Downloader {
     private String host;
     private int port;
     private String path;
@@ -27,7 +27,7 @@ public class VRDownloader {
      * @param snb      the segment number of the video segment.
      * @param segLen   the file size of the video segment.
      */
-    public VRDownloader(String host, int port, String path, String filename, int snb, int segLen) {
+    public Downloader(String host, int port, String path, String filename, int snb, int segLen) {
         // init instance variables
         this.host = host;
         this.port = port;
@@ -46,7 +46,7 @@ public class VRDownloader {
      * @param port to the VRServer.
      * @param path for the manifest file.
      */
-    public VRDownloader(String host, int port, String path) {
+    public Downloader(String host, int port, String path) {
         // init instance variables
         this.host = host;
         this.port = port;
