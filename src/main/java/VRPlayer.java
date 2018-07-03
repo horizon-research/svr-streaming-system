@@ -16,10 +16,6 @@ public class VRPlayer {
     private String segFilename;
     private JFrame vrPlayerFrame = new JFrame("VRPlayer");
     private JPanel mainPanel = new JPanel();
-    private JPanel buttonPanel = new JPanel();
-    private JLabel statLabel1 = new JLabel();
-    private JLabel statLabel2 = new JLabel();
-    private JLabel statLabel3 = new JLabel();
     private JLabel iconLabel = new JLabel();
     private ImageIcon icon;
     private Timer timer;
@@ -48,17 +44,13 @@ public class VRPlayer {
         //frame layout
         mainPanel.setLayout(null);
         mainPanel.add(iconLabel);
-        mainPanel.add(buttonPanel);
-        mainPanel.add(statLabel1);
-        mainPanel.add(statLabel2);
-        mainPanel.add(statLabel3);
         iconLabel.setBounds(0, 0, 1280, 720);
 
         vrPlayerFrame.getContentPane().add(mainPanel, BorderLayout.CENTER);
         vrPlayerFrame.setSize(new Dimension(1280, 720));
         vrPlayerFrame.setVisible(true);
 
-        timer = new Timer(5, new VRPlayer.timerListener());
+        timer = new Timer(30, new VRPlayer.timerListener());
         timer.setInitialDelay(0);
         timer.setCoalesce(true);
 
@@ -66,26 +58,22 @@ public class VRPlayer {
         // #decodedSegTop+1 to #currSegTop
         currSegTop = 0;
 
+        // download the manifest file sequentially and then create a thread to download all the video segments
         VRDownloader vrDownloader = new VRDownloader(host, port, "manifest-client.txt");
         manifestCreator = new Manifest("manifest-client.txt");
         SegmentDownloader downloader = new SegmentDownloader();
         Thread downloadThd = new Thread(downloader);
         downloadThd.start();
 
+        // while downloading video segment we use a separate thread to decode the downloaded video segment using a
+        // decode worker thread
+        // TODO the decoder is not using a pure java library and there is only one decode worker thread, so should improve performance
         segmentDecoder = new SegmentDecoder(this);
         Thread decodeThd = new Thread(segmentDecoder);
         decodeThd.start();
 
         // render decoded frames
         timer.start();
-    }
-
-    public String getSegmentPath() {
-        return this.segmentPath;
-    }
-
-    public String getSegFilename() {
-        return this.getSegFilename();
     }
 
     public String getSegFilenameFromId(int id) {
@@ -100,8 +88,8 @@ public class VRPlayer {
      * All the file transfer happens in a separate thread in this inner class.
      */
     private class SegmentDownloader implements Runnable {
+        // downloading video segment in a separate thread
         public void run() {
-            // download video segment in a separate thread
             for (int i = 1; i < manifestCreator.getVideoSegmentAmount(); i++) {
                 VRDownloader vrDownloader = new VRDownloader(host, port, segmentPath, segFilename, i, (int) manifestCreator.getVideoSegmentLength(i));
                 currSegTop = i;
@@ -110,7 +98,7 @@ public class VRPlayer {
     }
 
     /**
-     * Render the frames from Picture queue
+     * Render the frames from frame queue
      */
     private class timerListener implements ActionListener {
         public void actionPerformed(ActionEvent actionEvent) {
@@ -127,6 +115,5 @@ public class VRPlayer {
 
     public static void main(String[] args) {
         VRPlayer vrPlayer = new VRPlayer("localhost", 1988, "tmp", "segment");
-        System.out.println("fff");
     }
 }

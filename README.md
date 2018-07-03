@@ -1,5 +1,6 @@
-# VROS Client Server
-SVR stremaing system.
+# SVR Streaming System
+Make use of semantics in virtual reality video to optimize the power-consumption
+and bandwidth usage on client-side.
 
 # Prepare Video Segments
 ```

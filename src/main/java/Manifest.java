@@ -81,11 +81,20 @@ public class Manifest {
         writer.close();
     }
 
+    /**
+     * Get the file length of a specified video segment
+     * @param i identifier of video segment
+     * @return size of video segment
+     */
     public long getVideoSegmentLength(int i) {
         assert (i > 0);
         return fileLenVec.get(i);
     }
 
+    /**
+     * Get the total number of video segments
+     * @return the total of video segments
+     */
     public int getVideoSegmentAmount() {
         return fileLenVec.size() - 1;
     }
