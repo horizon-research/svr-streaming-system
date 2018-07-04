@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class manage frame rendering, video segment downloading, and all bunch
@@ -21,13 +22,15 @@ public class VRPlayer {
     private int port;
     private String segmentPath;
     private String segFilename;
+    private String traceFile;
     private JFrame vrPlayerFrame = new JFrame("VRPlayer");
     private JPanel mainPanel = new JPanel();
     private JLabel iconLabel = new JLabel();
     private ImageIcon icon;
-    private Timer timer;
-    private int currSegTop;     // indicate the top video segment id could be decoded
-    private FOVTraces fovTraces;
+    private Timer imageRenderingTimer;
+    private Timer fovRequestTimer;
+    private AtomicInteger currSegTop;     // indicate the top video segment id could be decoded
+    private FOVTraces fovTraces;    // use currSegTop to extract fov from fovTraces
 
     /**
      * Construct a VRPlayer object which manage GUI, video segment downloading, and video segment decoding
@@ -43,6 +46,7 @@ public class VRPlayer {
         this.port = port;
         this.segmentPath = segmentPath;
         this.segFilename = segFilename;
+        this.traceFile = trace;
 
         // setup frame
         this.vrPlayerFrame.addWindowListener(new WindowAdapter() {
@@ -64,27 +68,24 @@ public class VRPlayer {
         vrPlayerFrame.setSize(new Dimension(1280, 720));
         vrPlayerFrame.setVisible(true);
 
-        timer = new Timer(10, new VRPlayer.timerListener());
-        timer.setInitialDelay(0);
-        timer.setCoalesce(true);
+        imageRenderingTimer = new Timer(15, new guiTimerListener());
+        imageRenderingTimer.setInitialDelay(0);
+        imageRenderingTimer.setCoalesce(false);
+
+        fovRequestTimer = new Timer(30, new fovRequestTimerListener());
+        fovRequestTimer.setInitialDelay(0);
+        fovRequestTimer.setCoalesce(false);
 
         // if the currSegTop is larger than decodedSegTop then we could decode segment from
         // #decodedSegTop+1 to #currSegTop
-        currSegTop = 0;
+        currSegTop = new AtomicInteger(0);
 
         // Setup user fov trace object
-        fovTraces = new FOVTraces(trace);
-//        MetadataRequest metadataRequest = new MetadataRequest(host, port, fovTraces.get(1));
-//        metadataRequest.request();
+        fovTraces = new FOVTraces(traceFile);
 
         // Download the manifest file
         new ManifestDownloader(host, port, "manifest-client.txt");
         manifestCreator = new Manifest("manifest-client.txt");
-
-        // Create a thread to download all the video segments
-        SegmentBatchDownloader segmentBatchDownloader = new SegmentBatchDownloader();
-        Thread downloadThd = new Thread(segmentBatchDownloader);
-        downloadThd.start();
 
         // While downloading video segment we use a separate thread to
         // decode the downloaded video segment using a decode worker thread.
@@ -93,8 +94,14 @@ public class VRPlayer {
         Thread decodeThd = new Thread(segmentDecoder);
         decodeThd.start();
 
-        // render decoded frames
-        timer.start();
+        imageRenderingTimer.start();
+        fovRequestTimer.start();
+
+        try {
+            decodeThd.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -113,26 +120,24 @@ public class VRPlayer {
      * @return currSegTop
      */
     public int getCurrSegTop() {
-        return this.currSegTop;
+        return this.currSegTop.get();
     }
 
     /**
-     * All the file transfer happens in a separate thread in this inner class.
+     * Download one video segment in a separate thread.
      */
-    private class SegmentBatchDownloader implements Runnable {
-        // downloading video segment in a separate thread
+    private class SegmentDownloader implements Runnable {
+        // download the requested video segment in a separate thread
         public void run() {
-            for (int i = 1; i < manifestCreator.getVideoSegmentAmount(); i++) {
-                VideoSegmentDownloader downloader = new VideoSegmentDownloader(host, port, segmentPath, segFilename, i, (int) manifestCreator.getVideoSegmentLength(i));
-                currSegTop = i;
-            }
+//            new VideoSegmentDownloader(host, port, segmentPath, segFilename, currSegTop, (int) manifestCreator.getVideoSegmentLength(currSegTop+1));
+//            currSegTop++;
         }
     }
 
     /**
-     * Render the frames from frame queue.
+     * Timer for rendering image from frame queue.
      */
-    private class timerListener implements ActionListener {
+    private class guiTimerListener implements ActionListener {
         public void actionPerformed(ActionEvent actionEvent) {
             if (!segmentDecoder.getFrameQueue().isEmpty()) {
                 Picture picture = segmentDecoder.getFrameQueue().poll();
@@ -142,6 +147,25 @@ public class VRPlayer {
                     iconLabel.setIcon(icon);
                     System.out.println("Render icon");
                 }
+            }
+        }
+    }
+
+    /**
+     *  User requests for a video segment.
+     */
+    private class fovRequestTimerListener implements ActionListener {
+        public void actionPerformed(ActionEvent actionEvent) {
+            if (currSegTop.get() < manifestCreator.getVideoSegmentAmount()) {
+                // request fov from VRServer
+//                MetadataRequest metadataRequest = new MetadataRequest(host, port, fovTraces.get(currSegTop));
+//                metadataRequest.request();
+
+                // download video segment
+                int localSegTop = currSegTop.get() + 1;
+                new VideoSegmentDownloader(host, port, segmentPath, segFilename, localSegTop, (int) manifestCreator.getVideoSegmentLength(localSegTop));
+                currSegTop.getAndSet(localSegTop);
+                System.out.println("[DEBUG] currSegTop (video segment we now have downloaded): " + currSegTop.get());
             }
         }
     }

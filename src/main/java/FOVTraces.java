@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.Iterator;
 import java.util.Vector;
 
 /**
@@ -6,7 +7,7 @@ import java.util.Vector;
  * trace. Once the VRPlayer construct this class, it will use the fov
  * to request for video segment from VRServer.
  */
-public class FOVTraces {
+public class FOVTraces implements Iterable<FOVMetadata> {
     private Vector<FOVMetadata> fovTraces;
 
     /**
@@ -39,5 +40,9 @@ public class FOVTraces {
      */
     public FOVMetadata get(int segmentNb) {
         return fovTraces.get(segmentNb);
+    }
+
+    public Iterator<FOVMetadata> iterator() {
+        return fovTraces.iterator();
     }
 }

@@ -84,6 +84,12 @@ public class VRServer implements Runnable {
                 // send video segments
                 for (int i = 1; i <= manifestCreator.getVideoSegmentAmount(); i++) {
                     try {
+                        // get metadata
+//                        clientSock = ss.accept();
+//                        FOVMetadata fovMetadata = getMetaData();
+//                        System.out.println(fovMetadata);
+
+                        // send video segment
                         clientSock = ss.accept();
                         sendFile(clientSock, Utilities.getSegmentName(videoSegmentDir, this.filename, i));
                     } catch (IOException e) {
@@ -91,9 +97,6 @@ public class VRServer implements Runnable {
                     }
                 }
             } else {
-                // try
-//                System.out.println(getMetaData());
-
                 // create manifest file for VRServer to send to VRPlayer
                 manifestCreator = new Manifest("storage/rhino/", "output", "mp4");
                 try {

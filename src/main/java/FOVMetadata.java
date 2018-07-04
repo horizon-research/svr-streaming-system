@@ -23,4 +23,15 @@ public class FOVMetadata implements Serializable {
         this.width = Integer.parseInt(coord[2]);
         this.height = Integer.parseInt(coord[3]);
     }
+
+    @Override
+    public String toString() {
+        return "FOVMetadata{" +
+                "x=" + x +
+                ", y=" + y +
+                ", conf=" + conf +
+                ", width=" + width +
+                ", height=" + height +
+                '}';
+    }
 }

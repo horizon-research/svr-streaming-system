@@ -42,28 +42,27 @@ public class SegmentDecoder implements Runnable {
      */
     public void run() {
         while (decodedSegTop < vrPlayer.manifestCreator.getVideoSegmentAmount()) {
-            if (vrPlayer.getCurrSegTop() != 0) {
-                if (vrPlayer.getCurrSegTop() > decodedSegTop) {
-                    int start = decodedSegTop + 1;
-                    int end = vrPlayer.getCurrSegTop();
-                    for (int i = start; i <= end; i++) {
-                        String filename = vrPlayer.getSegFilenameFromId(i);
-                        File file = new File(filename);
-                        FrameGrab grab = null;
-                        try {
-                            grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file));
-                            Picture picture;
-                            while (null != (picture = grab.getNativeFrame())) {
-                                System.out.println(filename + ": " + picture.getWidth() + "x" + picture.getHeight() + " " + picture.getColor());
-                                frameQueue.add(picture);
-                            }
-                        } catch (JCodecException je1) {
-                            je1.printStackTrace();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+            int currSegTop = vrPlayer.getCurrSegTop();
+            if (currSegTop > decodedSegTop) {
+                System.out.println("[DEBUG] currSegTop: " + currSegTop + ", decodedSegTop: " + decodedSegTop);
+                int start = decodedSegTop + 1;
+                for (int i = start; i <= currSegTop; i++) {
+                    String filename = vrPlayer.getSegFilenameFromId(i);
+                    File file = new File(filename);
+                    FrameGrab grab = null;
+                    try {
+                        grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file));
+                        Picture picture;
+                        while (null != (picture = grab.getNativeFrame())) {
+                            System.out.println(filename + ": " + picture.getWidth() + "x" + picture.getHeight() + " " + picture.getColor());
+                            frameQueue.add(picture);
                         }
-                        decodedSegTop++;
+                    } catch (JCodecException je1) {
+                        je1.printStackTrace();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
                     }
+                    decodedSegTop++;
                 }
             }
         }
