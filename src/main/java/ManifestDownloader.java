@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 /**
  * This class is for downloading manifest file using TCP/IP.
  */
@@ -10,6 +12,11 @@ public class ManifestDownloader extends TCPDownloader {
      * @param path        the location where the manifest file will be stored.
      */
     public ManifestDownloader(String host, int port, String path) {
-        super(host, port, path, 1402);
+        super(host, port, path, 1381);
+        try {
+            request();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

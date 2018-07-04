@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 /**
  * For VRPlayer to download video segments.
  */
@@ -16,5 +18,10 @@ public class VideoSegmentDownloader extends TCPDownloader {
                                   int snb, int segLen) {
         // init instance variables
         super(host, port, Utilities.getSegmentName(path, filename, snb), segLen);
+        try {
+            request();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

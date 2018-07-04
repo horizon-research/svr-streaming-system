@@ -89,6 +89,7 @@ public class Manifest {
 //            System.out.println(len);
             writer.println(Long.toString(len));
         }
+        writer.flush();
         writer.close();
     }
 

@@ -27,7 +27,7 @@ public class TCPDownloader extends TCPRequest {
      *
      * @throws IOException when dataInputStream fails to read or fileOutputStream fails to write.
      */
-    private void download() throws IOException {
+    public void request() throws IOException {
         DataInputStream dis = new DataInputStream(getClientSock().getInputStream());
         FileOutputStream fos = new FileOutputStream(path);
         byte[] buffer = new byte[4096];

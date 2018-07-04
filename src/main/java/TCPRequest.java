@@ -4,7 +4,7 @@ import java.net.Socket;
 /**
  * A class that handles all the request to VRserver.
  */
-public class TCPRequest {
+abstract public class TCPRequest {
     private String host;
     private int port;
     private Socket clientSock;
@@ -32,4 +32,6 @@ public class TCPRequest {
     public Socket getClientSock() {
         return clientSock;
     }
+
+    abstract void request() throws IOException;
 }

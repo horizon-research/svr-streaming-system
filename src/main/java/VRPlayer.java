@@ -74,8 +74,9 @@ public class VRPlayer {
 
         // Setup user fov trace object
         fovTraces = new FOVTraces(trace);
+//        MetadataRequest metadataRequest = new MetadataRequest(host, port, fovTraces.get(1));
+//        metadataRequest.request();
 
-        // WARNING this might block gui!!
         // Download the manifest file
         new ManifestDownloader(host, port, "manifest-client.txt");
         manifestCreator = new Manifest("manifest-client.txt");

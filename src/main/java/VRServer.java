@@ -42,7 +42,7 @@ public class VRServer implements Runnable {
      * @param file filename of a video segment.
      * @throws IOException when dataOutputStream fails to write or fileInputStream fails to read.
      */
-    public void sendFile(Socket sock, String file) throws IOException {
+    private void sendFile(Socket sock, String file) throws IOException {
         DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
         FileInputStream fis = new FileInputStream(file);
         byte[] buffer = new byte[BUF_SIZE];
@@ -55,6 +55,24 @@ public class VRServer implements Runnable {
 
         fis.close();
         dos.close();
+    }
+
+    private FOVMetadata getMetaData() {
+        ObjectInputStream in = null;
+        FOVMetadata fovMetadata = null;
+        try {
+            clientSock = ss.accept();
+            in = new ObjectInputStream(clientSock.getInputStream());
+            try {
+                fovMetadata = (FOVMetadata) in.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return fovMetadata;
     }
 
     /**
@@ -73,19 +91,26 @@ public class VRServer implements Runnable {
                     }
                 }
             } else {
-                this.hasSentManifest = true;
+                // try
+//                System.out.println(getMetaData());
+
+                // create manifest file for VRServer to send to VRPlayer
                 manifestCreator = new Manifest("storage/rhino/", "output", "mp4");
                 try {
                     manifestCreator.write("manifest-server.txt");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+                // send the manifest file just created
+                System.out.println("Manifest file size: " + new File("manifest-server.txt").length());
                 try {
                     clientSock = ss.accept();
                     sendFile(clientSock, "manifest-server.txt");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                this.hasSentManifest = true;
             }
         }
     }
