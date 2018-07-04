@@ -158,8 +158,8 @@ public class VRPlayer {
         public void actionPerformed(ActionEvent actionEvent) {
             if (currSegTop.get() < manifestCreator.getVideoSegmentAmount()) {
                 // request fov from VRServer
-//                MetadataRequest metadataRequest = new MetadataRequest(host, port, fovTraces.get(currSegTop));
-//                metadataRequest.request();
+                MetadataRequest metadataRequest = new MetadataRequest(host, port, fovTraces.get(currSegTop.get()));
+                metadataRequest.request();
 
                 // download video segment
                 int localSegTop = currSegTop.get() + 1;

@@ -85,9 +85,8 @@ public class VRServer implements Runnable {
                 for (int i = 1; i <= manifestCreator.getVideoSegmentAmount(); i++) {
                     try {
                         // get metadata
-//                        clientSock = ss.accept();
-//                        FOVMetadata fovMetadata = getMetaData();
-//                        System.out.println(fovMetadata);
+                        FOVMetadata fovMetadata = getMetaData();
+                        System.out.println(fovMetadata);
 
                         // send video segment
                         clientSock = ss.accept();
