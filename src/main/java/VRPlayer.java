@@ -9,6 +9,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
+/**
+ * This class manage frame rendering, video segment downloading, and all bunch
+ * of fov-logic.
+ */
 public class VRPlayer {
     public Manifest manifestCreator;
     private SegmentDecoder segmentDecoder;
@@ -23,6 +27,7 @@ public class VRPlayer {
     private ImageIcon icon;
     private Timer timer;
     private int currSegTop;     // indicate the top video segment id could be decoded
+    private FOVTraces fovTraces;
 
     /**
      * Construct a VRPlayer object which manage GUI, video segment downloading, and video segment decoding
@@ -32,7 +37,8 @@ public class VRPlayer {
      * @param segmentPath path to the storage of video segments in a temporary path like tmp/
      * @param segFilename file name of video segment
      */
-    public VRPlayer(String host, int port, String segmentPath, String segFilename) {
+    public VRPlayer(String host, int port, String segmentPath,
+                    String segFilename, String trace) {
         this.host = host;
         this.port = port;
         this.segmentPath = segmentPath;
@@ -66,15 +72,21 @@ public class VRPlayer {
         // #decodedSegTop+1 to #currSegTop
         currSegTop = 0;
 
-        // download the manifest file sequentially and then create a thread to download all the video segments
-        Downloader vrDownloader = new Downloader(host, port, "manifest-client.txt");
+        // Setup user fov trace object
+        fovTraces = new FOVTraces(trace);
+
+        // WARNING this might block gui!!
+        // Download the manifest file
+        new ManifestDownloader(host, port, "manifest-client.txt");
         manifestCreator = new Manifest("manifest-client.txt");
-        SegmentBatchDownloader downloader = new SegmentBatchDownloader();
-        Thread downloadThd = new Thread(downloader);
+
+        // Create a thread to download all the video segments
+        SegmentBatchDownloader segmentBatchDownloader = new SegmentBatchDownloader();
+        Thread downloadThd = new Thread(segmentBatchDownloader);
         downloadThd.start();
 
-        // while downloading video segment we use a separate thread to decode the downloaded video segment using a
-        // decode worker thread
+        // While downloading video segment we use a separate thread to
+        // decode the downloaded video segment using a decode worker thread.
         // TODO the decoder is not using a pure java library and there is only one decode worker thread, so should improve performance
         segmentDecoder = new SegmentDecoder(this);
         Thread decodeThd = new Thread(segmentDecoder);
@@ -110,7 +122,7 @@ public class VRPlayer {
         // downloading video segment in a separate thread
         public void run() {
             for (int i = 1; i < manifestCreator.getVideoSegmentAmount(); i++) {
-                Downloader downloader = new Downloader(host, port, segmentPath, segFilename, i, (int) manifestCreator.getVideoSegmentLength(i));
+                VideoSegmentDownloader downloader = new VideoSegmentDownloader(host, port, segmentPath, segFilename, i, (int) manifestCreator.getVideoSegmentLength(i));
                 currSegTop = i;
             }
         }
@@ -139,6 +151,10 @@ public class VRPlayer {
      * @param args command line args.
      */
     public static void main(String[] args) {
-        VRPlayer vrPlayer = new VRPlayer("localhost", 1988, "tmp", "segment");
+        VRPlayer vrPlayer = new VRPlayer("localhost",
+                1988,
+                "tmp",
+                "segment",
+                "user-fov-trace.txt");
     }
 }

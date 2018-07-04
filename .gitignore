@@ -57,3 +57,4 @@ manifest*
 *.class
 .idea/uiDesigner.xml
 storage/rhino/*.mp4
+.keep
