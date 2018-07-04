@@ -17,8 +17,8 @@ public class Manifest {
      * Get the file size of all the video segments in the specified path.
      * The filename of video segments in the path should follow the pattern: path/name_{num}.mp4
      *
-     * @param path     should be a dir.
-     * @param filename name of manifest.
+     * @param path     should be a path to a directory.
+     * @param filename name of the manifest file.
      * @param ext      file extension of manifest file.
      */
     public Manifest(String path, String filename, String ext) {

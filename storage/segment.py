@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 import subprocess
 import time
 import numpy as np
+import queue
 
 parser = ArgumentParser('Create segments for the input video')
 parser.add_argument('video', help='video filename')
@@ -14,6 +15,8 @@ step = 0.5
 step_str = '.5'
 bias = False
 index = 1
+q = queue.Queue()
+
 for i in np.arange(0.0, args.total, step):
 	start = time.strftime('%H:%M:%S', time.gmtime(i))
 	end = time.strftime('%H:%M:%S', time.gmtime(i+step))
@@ -25,5 +28,7 @@ for i in np.arange(0.0, args.total, step):
 		bias = True
 	out = args.output + '_' + str(index) + '.mp4'
 	index = index+1
-	subprocess.call(['ffmpeg', '-i', args.video, '-ss', start, '-to', end, '-async', '1', out])
-	# print(start, end, out)
+	q.put(subprocess.Popen(['ffmpeg', '-i', args.video, '-ss', start, '-to', end, '-async', '1', out]))
+	# wait
+	if (q.qsize() > 4):
+		q.get().wait()

@@ -18,9 +18,14 @@ and bandwidth usage on client-side.
 mkdir tmp/
 mkdir storage/rhino
 cd storage
+# this may take around 10 to 20 mintues, so be patient...
 python3 segment.py rhino.mp4 100 rhino/output
 cd ..
 ```
+
+## Usage
+Run VRServer first and then launch VRPlayer. If there is any error, it might due to
+the path of storage and the video segment name in the main function.
 
 ## Compilation
 - use intellij or

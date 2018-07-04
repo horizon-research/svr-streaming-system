@@ -25,7 +25,8 @@ public class TCPDownloader extends TCPRequest {
     /**
      * Save file from VRServer.
      *
-     * @throws IOException when dataInputStream fails to read or fileOutputStream fails to write.
+     * @throws IOException when dataInputStream fails to read data from socket or the file name in fileOutputStream
+     * does not exists or not able to write.
      */
     public void request() throws IOException {
         DataInputStream dis = new DataInputStream(getClientSock().getInputStream());
