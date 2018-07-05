@@ -28,7 +28,7 @@ public class MetadataRequest extends TCPRequest {
     }
 
     /**
-     * send metadata object to VRServer.
+     * send metadata object.
      */
     public void request() {
         try {

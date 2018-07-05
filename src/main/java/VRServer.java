@@ -88,10 +88,11 @@ public class VRServer implements Runnable {
                         FOVMetadata fovMetadata = getMetaData();
                         System.out.println(fovMetadata);
 
-                        /*
-                         * TODO inspect storage to check if there is a matched video segment then send back "FOV", otherwise,
-                         * "FULL" (this information probably could be serialized in the video segment we send.
-                         */
+                        // TODO inspect storage to know if there is a matched video segment, if yes, send FOV, no, send FULL
+                        // now just send FULL since we only have full size segment
+                        clientSock = ss.accept();
+                        MsgRequest msgRequest = new MsgRequest(clientSock, "FULL");
+                        msgRequest.request();
 
                         // send video segment
                         clientSock = ss.accept();

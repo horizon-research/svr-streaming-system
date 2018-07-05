@@ -9,6 +9,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -177,13 +178,17 @@ public class VRPlayer {
         public void actionPerformed(ActionEvent actionEvent) {
             if (currSegTop.get() < manifestCreator.getVideoSegmentAmount()) {
                 // 1. request fov with the key frame metadata from VRServer
-                // TODO suppose one video segment have 30 frames temporarily, check out storage/segment.py
+                // TODO suppose one video segment have 10 frames temporarily, check out storage/segment.py
                 MetadataRequest metadataRequest = new MetadataRequest(host, port, fovTraces.get(currSegTop.get() * 10));
                 metadataRequest.request();
 
-                // TODO 2. get response from VRServer which indicate "FULL" or "FOV"
+                // 2. get response from VRServer which indicate "FULL" or "FOV"
+                MsgReceiver msgReceiver = new MsgReceiver(host, port);
+                msgReceiver.request();
+                System.out.println(msgReceiver.getMessage());
 
                 // 3. download video segment from VRServer
+                // TODO if FOV then:
                 // TODO 3-1. check whether the other video frames (exclude key frame) does not match fov
                 // TODO 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
                 // TODO 3-2  if all the frames matches, send back "GOOD"
@@ -196,6 +201,8 @@ public class VRPlayer {
                 }
                 currSegTop.getAndSet(localSegTop);
                 System.out.println("[DEBUG] currSegTop (video segment we now have downloaded): " + currSegTop.get());
+
+                // if FULL then we are done
             }
         }
     }

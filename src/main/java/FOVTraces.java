@@ -24,8 +24,10 @@ public class FOVTraces implements Iterable<FOVMetadata> {
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
             String line;
+            int i = 0;
             while ((line = bufferedReader.readLine()) != null) {
-                fovTraces.add(new FOVMetadata(line));
+                fovTraces.add(new FOVMetadata(i, line));
+                i++;
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

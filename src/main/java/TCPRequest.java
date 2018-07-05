@@ -27,6 +27,15 @@ abstract public class TCPRequest {
     }
 
     /**
+     * Construct the the request in server side using a known client socket.
+     * and port.
+     *
+     */
+    public TCPRequest(Socket clientSock) {
+        this.clientSock = clientSock;
+    }
+
+    /**
      * Turn back a client socket.
      *
      * @return clientSock
@@ -35,5 +44,10 @@ abstract public class TCPRequest {
         return clientSock;
     }
 
+    /**
+     * Sending various kind of object such as message and metadata.
+     *
+     * @throws IOException when socket went wrong.
+     */
     abstract void request() throws IOException;
 }

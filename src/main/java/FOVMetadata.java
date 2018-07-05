@@ -4,6 +4,7 @@ import java.io.Serializable;
  * Container of the fov metadata of a video segment.
  */
 public class FOVMetadata implements Serializable {
+    private int id;
     private int x;
     private int y;
     private int conf;
@@ -13,9 +14,11 @@ public class FOVMetadata implements Serializable {
     /**
      * Construct FOVMetadata object by parsing a string line.
      *
-     * @param line
+     * @param id sequential identifier of the metadata.
+     * @param line string line of user trace file.
      */
-    FOVMetadata(String line) {
+    FOVMetadata(int id, String line) {
+        this.id = id;
         String[] columns = line.split("\\s");
         this.conf = Integer.parseInt(columns[1]);
         String[] coord = columns[2].split(",");
@@ -28,7 +31,8 @@ public class FOVMetadata implements Serializable {
     @Override
     public String toString() {
         return "FOVMetadata{" +
-                "x=" + x +
+                "id=" + id +
+                ", x=" + x +
                 ", y=" + y +
                 ", conf=" + conf +
                 ", width=" + width +
