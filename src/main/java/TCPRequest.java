@@ -12,8 +12,9 @@ abstract public class TCPRequest {
     /**
      * Construct the client socket and connect to the server using the specified host
      * and port.
-     * @param host        host of VRServer
-     * @param port        port to VRServer
+     *
+     * @param host host of VRServer
+     * @param port port to VRServer
      */
     public TCPRequest(String host, int port) {
         this.host = host;
@@ -27,6 +28,7 @@ abstract public class TCPRequest {
 
     /**
      * Turn back a client socket.
+     *
      * @return clientSock
      */
     public Socket getClientSock() {

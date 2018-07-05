@@ -12,6 +12,7 @@ public class FOVMetadata implements Serializable {
 
     /**
      * Construct FOVMetadata object by parsing a string line.
+     *
      * @param line
      */
     FOVMetadata(String line) {

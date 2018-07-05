@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -79,8 +80,13 @@ public class VRPlayer {
         // Setup user fov trace object
         fovTraces = new FOVTraces(traceFile);
 
-        // Download the manifest file
-        new ManifestDownloader(host, port, "manifest-client.txt");
+        // Download manifest file
+        ManifestDownloader manifestDownloader = new ManifestDownloader(host, port, "manifest-client.txt");
+        try {
+            manifestDownloader.request();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         manifestCreator = new Manifest("manifest-client.txt");
 
         // While downloading video segment we use a separate thread to
@@ -130,6 +136,16 @@ public class VRPlayer {
     private class NetworkHandler implements Runnable {
         public void run() {
             Timer fovRequestTimer;
+
+            // TODO request video segment manifest from VRServer
+            // TODO the manifest should include the hierarchy of full/fov video segment
+            // ex:
+            // - full
+            //   - 1 : length
+            // - fov
+            //   - 1 : coord (x, y, w, h), length
+
+            // request video segment every tick-tock
             fovRequestTimer = new Timer(30, new fovRequestTimerListener());
             fovRequestTimer.setInitialDelay(0);
             fovRequestTimer.setCoalesce(false);
@@ -155,18 +171,29 @@ public class VRPlayer {
     }
 
     /**
-     *  User requests for a video segment.
+     * User requests for a video segment.
      */
     private class fovRequestTimerListener implements ActionListener {
         public void actionPerformed(ActionEvent actionEvent) {
             if (currSegTop.get() < manifestCreator.getVideoSegmentAmount()) {
-                // request fov from VRServer
-                MetadataRequest metadataRequest = new MetadataRequest(host, port, fovTraces.get(currSegTop.get()));
+                // 1. request fov with the key frame metadata from VRServer
+                // TODO suppose one video segment have 30 frames temporarily, check out storage/segment.py
+                MetadataRequest metadataRequest = new MetadataRequest(host, port, fovTraces.get(currSegTop.get() * 30));
                 metadataRequest.request();
 
-                // download video segment
+                // TODO 2. get response from VRServer which indicate "FULL" or "FOV"
+
+                // 3. download video segment from VRServer
+                // TODO 3-1. check whether the other video frames (exclude key frame) does not match fov
+                // TODO 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
+                // TODO 3-2  if all the frames matches, send back "GOOD"
                 int localSegTop = currSegTop.get() + 1;
-                new VideoSegmentDownloader(host, port, segmentPath, segFilename, localSegTop, (int) manifestCreator.getVideoSegmentLength(localSegTop));
+                VideoSegmentDownloader videoSegmentDownloader = new VideoSegmentDownloader(host, port, segmentPath, segFilename, localSegTop, (int) manifestCreator.getVideoSegmentLength(localSegTop));
+                try {
+                    videoSegmentDownloader.request();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 currSegTop.getAndSet(localSegTop);
                 System.out.println("[DEBUG] currSegTop (video segment we now have downloaded): " + currSegTop.get());
             }

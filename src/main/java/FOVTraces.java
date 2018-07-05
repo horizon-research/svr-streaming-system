@@ -12,6 +12,7 @@ public class FOVTraces implements Iterable<FOVMetadata> {
 
     /**
      * Parse the user fov trace file.
+     *
      * @param trace the path of a user fov traces file, the format
      *              of the file should be delimit by space.
      */
@@ -35,6 +36,7 @@ public class FOVTraces implements Iterable<FOVMetadata> {
 
     /**
      * This function send back the metadata object with the specified segment number.
+     *
      * @param segmentNb The identifier of video segment.
      * @return A serializable metadata object.
      */

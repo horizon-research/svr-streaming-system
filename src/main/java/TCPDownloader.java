@@ -11,10 +11,11 @@ public class TCPDownloader extends TCPRequest {
 
     /**
      * Construct client socket and the filename of the downloaded file.
-     * @param host        host of VRServer.
-     * @param port        port to VRServer.
-     * @param path        the path of the downloaded file.
-     * @param length      the file size of the downloaded file.
+     *
+     * @param host   host of VRServer.
+     * @param port   port to VRServer.
+     * @param path   the path of the downloaded file.
+     * @param length the file size of the downloaded file.
      */
     public TCPDownloader(String host, int port, String path, int length) {
         super(host, port);
@@ -26,7 +27,7 @@ public class TCPDownloader extends TCPRequest {
      * Save file from VRServer.
      *
      * @throws IOException when dataInputStream fails to read data from socket or the file name in fileOutputStream
-     * does not exists or not able to write.
+     *                     does not exists or not able to write.
      */
     public void request() throws IOException {
         DataInputStream dis = new DataInputStream(getClientSock().getInputStream());

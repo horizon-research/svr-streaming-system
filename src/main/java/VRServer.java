@@ -36,7 +36,7 @@ public class VRServer implements Runnable {
     }
 
     /**
-     * Send file to the specified socket s.
+     * Send file to the specified socket.
      *
      * @param sock socket of the client.
      * @param file filename of a video segment.
@@ -84,18 +84,34 @@ public class VRServer implements Runnable {
                 // send video segments
                 for (int i = 1; i <= manifestCreator.getVideoSegmentAmount(); i++) {
                     try {
-                        // get metadata
+                        // get user fov metadata (key frame)
                         FOVMetadata fovMetadata = getMetaData();
                         System.out.println(fovMetadata);
+
+                        /*
+                         * TODO inspect storage to check if there is a matched video segment then send back "FOV", otherwise,
+                         * "FULL" (this information probably could be serialized in the video segment we send.
+                         */
 
                         // send video segment
                         clientSock = ss.accept();
                         sendFile(clientSock, Utilities.getSegmentName(videoSegmentDir, this.filename, i));
+
+                        // TODO wait for "GOOD" or "BAD"
+                        // TODO GOOD: continue the next iteration
+                        // TODO BAD: send back full size video segment
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
             } else {
+                // TODO manifest file now is only lines of file size, and should make it like:
+                // ex:
+                // - full
+                //   - 1 : length
+                // - fov
+                //   - 1 : coord (x, y, w, h), length
+
                 // create manifest file for VRServer to send to VRPlayer
                 manifestCreator = new Manifest("storage/rhino/", "output", "mp4");
                 try {
