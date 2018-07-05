@@ -9,7 +9,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -179,7 +178,7 @@ public class VRPlayer {
             if (currSegTop.get() < manifestCreator.getVideoSegmentAmount()) {
                 // 1. request fov with the key frame metadata from VRServer
                 // TODO suppose one video segment have 10 frames temporarily, check out storage/segment.py
-                MetadataRequest metadataRequest = new MetadataRequest(host, port, fovTraces.get(currSegTop.get() * 10));
+                SerializeRequest metadataRequest = new SerializeRequest(host, port, fovTraces.get(currSegTop.get() * 10));
                 metadataRequest.request();
 
                 // 2. get response from VRServer which indicate "FULL" or "FOV"

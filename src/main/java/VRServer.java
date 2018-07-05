@@ -90,8 +90,7 @@ public class VRServer implements Runnable {
 
                         // TODO inspect storage to know if there is a matched video segment, if yes, send FOV, no, send FULL
                         // now just send FULL since we only have full size segment
-                        clientSock = ss.accept();
-                        MsgRequest msgRequest = new MsgRequest(clientSock, "FULL");
+                        SerializeRequest<String> msgRequest = new SerializeRequest<String>(this.ss, "FULL");
                         msgRequest.request();
 
                         // send video segment

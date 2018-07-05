@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
@@ -27,12 +28,17 @@ abstract public class TCPRequest {
     }
 
     /**
-     * Construct the the request in server side using a known client socket.
+     * Construct a connection to client using server socket.
      * and port.
      *
+     * @param ss an already initiated server socket.
      */
-    public TCPRequest(Socket clientSock) {
-        this.clientSock = clientSock;
+    public TCPRequest(ServerSocket ss) {
+        try {
+            this.clientSock = ss.accept();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

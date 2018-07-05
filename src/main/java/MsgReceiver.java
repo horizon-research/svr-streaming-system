@@ -10,6 +10,7 @@ public class MsgReceiver extends TCPRequest {
 
     /**
      * Setup the env for receiving message from a tcp end point.
+     *
      * @param host host of VRServer
      * @param port port to VRServer
      */
@@ -39,6 +40,7 @@ public class MsgReceiver extends TCPRequest {
 
     /**
      * Get the message we got from request() instance method.
+     *
      * @return message from request()
      */
     public String getMessage() {
