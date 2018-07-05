@@ -178,7 +178,7 @@ public class VRPlayer {
             if (currSegTop.get() < manifestCreator.getVideoSegmentAmount()) {
                 // 1. request fov with the key frame metadata from VRServer
                 // TODO suppose one video segment have 30 frames temporarily, check out storage/segment.py
-                MetadataRequest metadataRequest = new MetadataRequest(host, port, fovTraces.get(currSegTop.get() * 30));
+                MetadataRequest metadataRequest = new MetadataRequest(host, port, fovTraces.get(currSegTop.get() * 10));
                 metadataRequest.request();
 
                 // TODO 2. get response from VRServer which indicate "FULL" or "FOV"

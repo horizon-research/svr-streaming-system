@@ -41,6 +41,7 @@ public class FOVTraces implements Iterable<FOVMetadata> {
      * @return A serializable metadata object.
      */
     public FOVMetadata get(int segmentNb) {
+        assert fovTraces.size() > segmentNb;
         return fovTraces.get(segmentNb);
     }
 
