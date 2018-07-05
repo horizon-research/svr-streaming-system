@@ -12,8 +12,9 @@ public class MetadataRequest extends TCPRequest {
      * Construct the client socket and connect to the server using the
      * specified host and port.
      *
-     * @param host host of VRServer
-     * @param port port to VRServer
+     * @param host host of VRServer.
+     * @param port port to VRServer.
+     * @param metadata metadata class that containing field-of-view info.
      */
     public MetadataRequest(String host, int port, FOVMetadata metadata) {
         super(host, port);

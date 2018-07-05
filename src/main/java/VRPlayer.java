@@ -28,17 +28,17 @@ public class VRPlayer {
     private JLabel iconLabel = new JLabel();
     private ImageIcon icon;
     private Timer imageRenderingTimer;
-    private Timer fovRequestTimer;
     private AtomicInteger currSegTop;     // indicate the top video segment id could be decoded
     private FOVTraces fovTraces;    // use currSegTop to extract fov from fovTraces
 
     /**
      * Construct a VRPlayer object which manage GUI, video segment downloading, and video segment decoding
      *
-     * @param host        host of VRServer
-     * @param port        port to VRServer
-     * @param segmentPath path to the storage of video segments in a temporary path like tmp/
-     * @param segFilename file name of video segment
+     * @param host        host of VRServer.
+     * @param port        port to VRServer.
+     * @param segmentPath path to the storage of video segments in a temporary path like tmp/.
+     * @param segFilename file name of video segment.
+     * @param trace       path of a user field-of-view trace file.
      */
     public VRPlayer(String host, int port, String segmentPath,
                     String segFilename, String trace) {
@@ -72,10 +72,6 @@ public class VRPlayer {
         imageRenderingTimer.setInitialDelay(0);
         imageRenderingTimer.setCoalesce(false);
 
-        fovRequestTimer = new Timer(30, new fovRequestTimerListener());
-        fovRequestTimer.setInitialDelay(0);
-        fovRequestTimer.setCoalesce(false);
-
         // if the currSegTop is larger than decodedSegTop then we could decode segment from
         // #decodedSegTop+1 to #currSegTop
         currSegTop = new AtomicInteger(0);
@@ -92,13 +88,18 @@ public class VRPlayer {
         // TODO the decoder is not using a pure java library and there is only one decode worker thread, so should improve performance
         segmentDecoder = new SegmentDecoder(this);
         Thread decodeThd = new Thread(segmentDecoder);
-        decodeThd.start();
 
+        // Create network handler thread
+        NetworkHandler networkHandler = new NetworkHandler();
+        Thread networkThd = new Thread(networkHandler);
+
+        decodeThd.start();
         imageRenderingTimer.start();
-        fovRequestTimer.start();
+        networkThd.start();
 
         try {
             decodeThd.join();
+            networkThd.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -124,13 +125,15 @@ public class VRPlayer {
     }
 
     /**
-     * Download one video segment in a separate thread.
+     * Download video segments or sending fov metadata in a separate thread.
      */
-    private class SegmentDownloader implements Runnable {
-        // download the requested video segment in a separate thread
+    private class NetworkHandler implements Runnable {
         public void run() {
-//            new VideoSegmentDownloader(host, port, segmentPath, segFilename, currSegTop, (int) manifestCreator.getVideoSegmentLength(currSegTop+1));
-//            currSegTop++;
+            Timer fovRequestTimer;
+            fovRequestTimer = new Timer(30, new fovRequestTimerListener());
+            fovRequestTimer.setInitialDelay(0);
+            fovRequestTimer.setCoalesce(false);
+            fovRequestTimer.start();
         }
     }
 

@@ -58,3 +58,4 @@ manifest*
 .idea/uiDesigner.xml
 storage/rhino/*.mp4
 .keep
+docs/
