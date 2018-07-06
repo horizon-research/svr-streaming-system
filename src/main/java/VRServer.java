@@ -90,7 +90,7 @@ public class VRServer implements Runnable {
 
                         // TODO inspect storage to know if there is a matched video segment, if yes, send FOV, no, send FULL
                         // now just send FULL since we only have full size segment
-                        TCPSerializeRequest<String> msgRequest = new TCPSerializeRequest<String>(this.ss, "FULL");
+                        TCPSerializeSender<String> msgRequest = new TCPSerializeSender<String>(this.ss, "FULL");
                         msgRequest.request();
 
                         // send video segment
@@ -113,7 +113,7 @@ public class VRServer implements Runnable {
                 //   - 1 : coord (x, y, w, h), length
 
                 // create manifest file for VRServer to send to VRPlayer
-                manifestCreator = new Manifest("storage/rhino/", "output", "mp4");
+                manifestCreator = new Manifest("storage/rhino/", "storage/rhinos-pred.txt");
                 try {
                     manifestCreator.write("manifest-server.txt");
                 } catch (IOException e) {
@@ -123,11 +123,12 @@ public class VRServer implements Runnable {
                 // send the manifest file just created
                 System.out.println("Manifest file size: " + new File("manifest-server.txt").length());
                 try {
-                    clientSock = ss.accept();
+                    this.clientSock = ss.accept();
                     sendFile(clientSock, "manifest-server.txt");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
                 this.hasSentManifest = true;
             }
         }

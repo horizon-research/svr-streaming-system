@@ -1,3 +1,4 @@
+import com.google.gson.Gson;
 import org.jcodec.common.model.Picture;
 import org.jcodec.scale.AWTUtil;
 
@@ -8,6 +9,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -87,7 +91,13 @@ public class VRPlayer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        manifestCreator = new Manifest("manifest-client.txt");
+        Gson gson = new Gson();
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader("manifest-client.txt"));
+            manifestCreator = gson.fromJson(bufferedReader, Manifest.class);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
         // While downloading video segment we use a separate thread to
         // decode the downloaded video segment using a decode worker thread.
@@ -178,7 +188,7 @@ public class VRPlayer {
             if (currSegTop.get() < manifestCreator.getVideoSegmentAmount()) {
                 // 1. request fov with the key frame metadata from VRServer
                 // TODO suppose one video segment have 10 frames temporarily, check out storage/segment.py
-                TCPSerializeRequest metadataRequest = new TCPSerializeRequest<FOVMetadata>(host, port, fovTraces.get(currSegTop.get() * 10));
+                TCPSerializeSender metadataRequest = new TCPSerializeSender<FOVMetadata>(host, port, fovTraces.get(currSegTop.get() * 10));
                 metadataRequest.request();
 
                 // 2. get response from VRServer which indicate "FULL" or "FOV"

@@ -1,4 +1,7 @@
+import com.google.gson.*;
+
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Vector;
@@ -7,29 +10,54 @@ import java.util.Vector;
  * This class handles the creation and parsing of manifest files. The manifest file includes the file size of all the
  * video segments.
  */
-public class Manifest {
+public class Manifest implements Serializable {
+    private int length;
+    private Vector<VideoSegmentMetaData> fileMetadataVec;
 
-    private File dir;
-    private File[] dirList;
-    private Vector<Long> fileLenVec;
+    private class VideoSegmentMetaData {
+        FOVMetadata fovMetadata;
+        long size;
+        VideoSegmentMetaData(FOVMetadata fovMetadata, long size) {
+            this.fovMetadata = fovMetadata;
+            this.size = size;
+        }
+    }
 
     /**
-     * Get the file size of all the video segments in the specified path.
-     * The filename of video segments in the path should follow the pattern: path/name_{num}.mp4
+     * Get the file size of all the video segments in the specified storagePath.
+     * The filename of video segments in the storagePath should follow the pattern: storagePath/name_{num}.mp4
      *
-     * @param path     should be a path to a directory.
-     * @param filename name of the manifest file.
-     * @param ext      file extension of manifest file.
+     * @param storagePath     should be a path to a directory.
+     * @param predFilePath    path to a object detection file of the video.
      */
-    public Manifest(String path, String filename, String ext) {
-        // init
-        dir = new File(path);
-        fileLenVec = new Vector<Long>();
+    public Manifest(String storagePath, String predFilePath) {
+        // parse predict file
+        File predFile = new File(predFilePath);
+        Vector<FOVMetadata> fovMetadataVector = new Vector<FOVMetadata>();
+        fovMetadataVector.add(null);
+        if (predFile.exists()) {
+            try {
+                FileReader fileReader = new FileReader(predFile);
+                BufferedReader bufferedReader = new BufferedReader(fileReader);
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    fovMetadataVector.add(new FOVMetadata(line));
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-        // fill fileLenVec
-        fileLenVec.add(-1L);
-        if (dir.exists() && dir.isDirectory()) {
-            dirList = dir.listFiles();
+        // get video segment size and feed into
+        File storageDirectory = new File(storagePath);
+        fileMetadataVec = new Vector<VideoSegmentMetaData>();
+        this.length = 0;
+
+        fileMetadataVec.add(new VideoSegmentMetaData(new FOVMetadata(0,"0 0 0,0,0,0"), -1L));
+        if (storageDirectory.exists() && storageDirectory.isDirectory()) {
+            File[] dirList = storageDirectory.listFiles();
             Arrays.sort(dirList, new Comparator<File>() {
                 public int compare(File f1, File f2) {
                     String f1name = f1.getName();
@@ -37,43 +65,16 @@ public class Manifest {
                     return Utilities.getIdFromSegmentName(f1name) - Utilities.getIdFromSegmentName(f2name);
                 }
             });
-            if (dirList != null) {
-                for (File f : dirList) {
-                    fileLenVec.add(f.length());
-                }
-            } else {
-                System.err.println(path + " do not have any video segments.");
-                System.exit(1);
+            for (File f : dirList) {
+                int size = fileMetadataVec.size();
+                fileMetadataVec.add(new VideoSegmentMetaData(fovMetadataVector.get(size), f.length()));
             }
         } else {
-            System.err.println(path + " should be a directory!");
+            System.err.println(storagePath + " should be a directory!");
             System.exit(1);
         }
-    }
 
-    /**
-     * Construct manifest object from file.
-     *
-     * @param filename is the path to the manifest file.
-     */
-    public Manifest(String filename) {
-        // init
-        this.fileLenVec = new Vector<Long>();
-
-        // fill fileLenVec
-        File file = new File(filename);
-        try {
-            FileReader fileReader = new FileReader(file);
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                this.fileLenVec.add(Long.parseLong(line) + 10);
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.length = fileMetadataVec.size();
     }
 
     /**
@@ -85,10 +86,9 @@ public class Manifest {
      */
     public void write(String path) throws FileNotFoundException, UnsupportedEncodingException {
         PrintWriter writer = new PrintWriter(path, "UTF-8");
-        for (long len : fileLenVec) {
-//            System.out.println(len);
-            writer.println(Long.toString(len));
-        }
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String manifestStr = gson.toJson(this);
+        writer.write(manifestStr);
         writer.flush();
         writer.close();
     }
@@ -101,7 +101,7 @@ public class Manifest {
      */
     public long getVideoSegmentLength(int i) {
         assert (i > 0);
-        return fileLenVec.get(i);
+        return fileMetadataVec.get(i).size;
     }
 
     /**
@@ -110,6 +110,6 @@ public class Manifest {
      * @return the total of video segments.
      */
     public int getVideoSegmentAmount() {
-        return fileLenVec.size() - 1;
+        return fileMetadataVec.size() - 1;
     }
 }

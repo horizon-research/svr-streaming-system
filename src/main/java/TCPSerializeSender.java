@@ -7,7 +7,7 @@ import java.util.logging.SocketHandler;
 /**
  * This class is for sending user fov serializeObj to server.
  */
-public class TCPSerializeRequest<T> extends TCPRequest {
+public class TCPSerializeSender<T> extends TCPRequest {
     private T serializeObj;
     private ObjectOutputStream out;
 
@@ -19,7 +19,7 @@ public class TCPSerializeRequest<T> extends TCPRequest {
      * @param port         port to VRServer.
      * @param serializeObj serializeObj class that containing field-of-view info.
      */
-    public TCPSerializeRequest(String host, int port, T serializeObj) {
+    public TCPSerializeSender(String host, int port, T serializeObj) {
         super(host, port);
         this.serializeObj = serializeObj;
 
@@ -30,7 +30,7 @@ public class TCPSerializeRequest<T> extends TCPRequest {
         }
     }
 
-    public TCPSerializeRequest(ServerSocket ss, T serializeObj) {
+    public TCPSerializeSender(ServerSocket ss, T serializeObj) {
         super(ss);
         this.serializeObj = serializeObj;
 
