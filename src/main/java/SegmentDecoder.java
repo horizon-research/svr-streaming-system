@@ -2,9 +2,7 @@ import org.jcodec.api.FrameGrab;
 import org.jcodec.api.JCodecException;
 import org.jcodec.common.io.NIOUtils;
 import org.jcodec.common.model.Picture;
-import org.jcodec.scale.AWTUtil;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -41,7 +39,7 @@ public class SegmentDecoder implements Runnable {
      * Main logic of decoding "available" video segments.
      */
     public void run() {
-        while (decodedSegTop < vrPlayer.manifestCreator.getVideoSegmentAmount()) {
+        while (decodedSegTop < vrPlayer.manifest.getVideoSegmentAmount()) {
             int currSegTop = vrPlayer.getCurrSegTop();
             if (currSegTop > decodedSegTop) {
                 System.out.println("[DEBUG] currSegTop: " + currSegTop + ", decodedSegTop: " + decodedSegTop);

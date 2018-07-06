@@ -1,7 +1,6 @@
 import com.google.gson.*;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Vector;
@@ -15,16 +14,16 @@ public class Manifest implements Serializable {
     private Vector<VideoSegmentMetaData> fileMetadataVec;
 
     private class VideoSegmentMetaData {
-        FOVMetadata fovMetadata;
+        Vector<FOVMetadata> fovMetadataVec;
         long size;
-        VideoSegmentMetaData(FOVMetadata fovMetadata, long size) {
-            this.fovMetadata = fovMetadata;
+        VideoSegmentMetaData(Vector<FOVMetadata> fovMetadataVec, long size) {
+            this.fovMetadataVec = fovMetadataVec;
             this.size = size;
         }
     }
 
     /**
-     * Get the file size of all the video segments in the specified storagePath.
+     * Create a manifest object using all the video segment file size and the object-predicted trace file.
      * The filename of video segments in the storagePath should follow the pattern: storagePath/name_{num}.mp4
      *
      * @param storagePath     should be a path to a directory.
@@ -33,15 +32,29 @@ public class Manifest implements Serializable {
     public Manifest(String storagePath, String predFilePath) {
         // parse predict file
         File predFile = new File(predFilePath);
-        Vector<FOVMetadata> fovMetadataVector = new Vector<FOVMetadata>();
-        fovMetadataVector.add(null);
+        Vector<Vector<FOVMetadata>> fovMetadata2DVec = new Vector<Vector<FOVMetadata>>();
+        fovMetadata2DVec.add(null);
         if (predFile.exists()) {
             try {
                 FileReader fileReader = new FileReader(predFile);
                 BufferedReader bufferedReader = new BufferedReader(fileReader);
                 String line;
+                Vector<FOVMetadata> fovMetadataVec = new Vector<FOVMetadata>();
+                int last_id = 1;
                 while ((line = bufferedReader.readLine()) != null) {
-                    fovMetadataVector.add(new FOVMetadata(line));
+                    String[] columns = line.split("\\s");
+                    int id = Integer.parseInt(columns[0]);
+                    int pathId = Integer.parseInt(columns[1]);
+
+                    if (pathId == 0) {
+                        if (id == last_id) {
+                            last_id = id;
+                        } else  {
+                            fovMetadata2DVec.add(fovMetadataVec);
+                            fovMetadataVec = new Vector<FOVMetadata>();
+                        }
+                    }
+                    fovMetadataVec.add(new FOVMetadata(line));
                 }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -55,9 +68,12 @@ public class Manifest implements Serializable {
         fileMetadataVec = new Vector<VideoSegmentMetaData>();
         this.length = 0;
 
-        fileMetadataVec.add(new VideoSegmentMetaData(new FOVMetadata(0,"0 0 0,0,0,0"), -1L));
+        // padding
+        fileMetadataVec.add(new VideoSegmentMetaData(null, -1L));
+
         if (storageDirectory.exists() && storageDirectory.isDirectory()) {
             File[] dirList = storageDirectory.listFiles();
+            assert dirList != null;
             Arrays.sort(dirList, new Comparator<File>() {
                 public int compare(File f1, File f2) {
                     String f1name = f1.getName();
@@ -67,7 +83,7 @@ public class Manifest implements Serializable {
             });
             for (File f : dirList) {
                 int size = fileMetadataVec.size();
-                fileMetadataVec.add(new VideoSegmentMetaData(fovMetadataVector.get(size), f.length()));
+                fileMetadataVec.add(new VideoSegmentMetaData(fovMetadata2DVec.get(size), f.length()));
             }
         } else {
             System.err.println(storagePath + " should be a directory!");

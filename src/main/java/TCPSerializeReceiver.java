@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.ServerSocket;
 
 /**
  * Receive serializeObj from a tcp connection.
@@ -16,6 +17,22 @@ public class TCPSerializeReceiver<T> extends TCPRequest {
      */
     public TCPSerializeReceiver(String host, int port) {
         super(host, port);
+        serializeObj = null;
+
+        try {
+            in = new ObjectInputStream(getClientSock().getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Setup the env for receiving serializeObj from a tcp end point.
+     *
+     * @param ss
+     */
+    public TCPSerializeReceiver(ServerSocket ss) {
+        super(ss);
         serializeObj = null;
 
         try {

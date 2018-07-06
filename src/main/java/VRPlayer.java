@@ -20,9 +20,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * of fov-logic.
  */
 public class VRPlayer {
-    public Manifest manifestCreator;
-    private SegmentDecoder segmentDecoder;
+    Manifest manifest;
 
+    private SegmentDecoder segmentDecoder;
     private String host;
     private int port;
     private String segmentPath;
@@ -94,7 +94,7 @@ public class VRPlayer {
         Gson gson = new Gson();
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader("manifest-client.txt"));
-            manifestCreator = gson.fromJson(bufferedReader, Manifest.class);
+            manifest = gson.fromJson(bufferedReader, Manifest.class);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -109,10 +109,12 @@ public class VRPlayer {
         NetworkHandler networkHandler = new NetworkHandler();
         Thread networkThd = new Thread(networkHandler);
 
-        decodeThd.start();
+        // Start main thread gui timer, video decode thread and network handler thread
         imageRenderingTimer.start();
+        decodeThd.start();
         networkThd.start();
 
+        // Wait for all the worker thread to finish
         try {
             decodeThd.join();
             networkThd.join();
@@ -124,8 +126,8 @@ public class VRPlayer {
     /**
      * getSegFilenameFromId.
      *
-     * @param id id of video segment
-     * @return name of video segment
+     * @param id identifier of the video segment.
+     * @return name of video segment.
      */
     public String getSegFilenameFromId(int id) {
         return Utilities.getSegmentName(segmentPath, segFilename, id);
@@ -134,7 +136,7 @@ public class VRPlayer {
     /**
      * Get the largest segment id that has been downloaded.
      *
-     * @return currSegTop
+     * @return the largest sequential identifier of the downloaded video segment.
      */
     public int getCurrSegTop() {
         return this.currSegTop.get();
@@ -144,19 +146,9 @@ public class VRPlayer {
      * Download video segments or sending fov metadata in a separate thread.
      */
     private class NetworkHandler implements Runnable {
+        // Request video segment every tick-tock
         public void run() {
-            Timer fovRequestTimer;
-
-            // TODO request video segment manifest from VRServer
-            // TODO the manifest should include the hierarchy of full/fov video segment
-            // ex:
-            // - full
-            //   - 1 : length
-            // - fov
-            //   - 1 : coord (x, y, w, h), length
-
-            // request video segment every tick-tock
-            fovRequestTimer = new Timer(30, new fovRequestTimerListener());
+            Timer fovRequestTimer = new Timer(30, new fovRequestTimerListener());
             fovRequestTimer.setInitialDelay(0);
             fovRequestTimer.setCoalesce(false);
             fovRequestTimer.start();
@@ -164,7 +156,7 @@ public class VRPlayer {
     }
 
     /**
-     * Timer for rendering image from frame queue.
+     * The main thread timer that render image from frame queue.
      */
     private class guiTimerListener implements ActionListener {
         public void actionPerformed(ActionEvent actionEvent) {
@@ -185,7 +177,7 @@ public class VRPlayer {
      */
     private class fovRequestTimerListener implements ActionListener {
         public void actionPerformed(ActionEvent actionEvent) {
-            if (currSegTop.get() < manifestCreator.getVideoSegmentAmount()) {
+            if (currSegTop.get() < manifest.getVideoSegmentAmount()) {
                 // 1. request fov with the key frame metadata from VRServer
                 // TODO suppose one video segment have 10 frames temporarily, check out storage/segment.py
                 TCPSerializeSender metadataRequest = new TCPSerializeSender<FOVMetadata>(host, port, fovTraces.get(currSegTop.get() * 10));
@@ -204,7 +196,7 @@ public class VRPlayer {
                 int localSegTop = currSegTop.get() + 1;
                 VideoSegmentDownloader videoSegmentDownloader =
                         new VideoSegmentDownloader(host, port, segmentPath, segFilename, localSegTop,
-                                (int) manifestCreator.getVideoSegmentLength(localSegTop));
+                                (int) manifest.getVideoSegmentLength(localSegTop));
                 try {
                     videoSegmentDownloader.request();
                 } catch (IOException e) {

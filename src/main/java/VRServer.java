@@ -57,24 +57,6 @@ public class VRServer implements Runnable {
         dos.close();
     }
 
-    private FOVMetadata getMetaData() {
-        ObjectInputStream in = null;
-        FOVMetadata fovMetadata = null;
-        try {
-            clientSock = ss.accept();
-            in = new ObjectInputStream(clientSock.getInputStream());
-            try {
-                fovMetadata = (FOVMetadata) in.readObject();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return fovMetadata;
-    }
-
     /**
      * Accept the connection from VRPlayer and then send the manifest file or video segments.
      */
@@ -85,8 +67,9 @@ public class VRServer implements Runnable {
                 for (int i = 1; i <= manifestCreator.getVideoSegmentAmount(); i++) {
                     try {
                         // get user fov metadata (key frame)
-                        FOVMetadata fovMetadata = getMetaData();
-                        System.out.println(fovMetadata);
+                        TCPSerializeReceiver<FOVMetadata> fovMetadataTCPSerializeReceiver = new TCPSerializeReceiver<FOVMetadata>(ss);
+                        fovMetadataTCPSerializeReceiver.request();
+                        System.out.println("Get user fov: " + fovMetadataTCPSerializeReceiver.getSerializeObj());
 
                         // TODO inspect storage to know if there is a matched video segment, if yes, send FOV, no, send FULL
                         // now just send FULL since we only have full size segment
