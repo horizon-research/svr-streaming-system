@@ -2,21 +2,21 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 /**
- * Receive message from a tcp connection.
+ * Receive serializeObj from a tcp connection.
  */
-public class MsgReceiver extends TCPRequest {
+public class TCPSerializeReceiver<T> extends TCPRequest {
     private ObjectInputStream in;
-    private String message;
+    private T serializeObj;
 
     /**
-     * Setup the env for receiving message from a tcp end point.
+     * Setup the env for receiving serializeObj from a tcp end point.
      *
      * @param host host of VRServer
      * @param port port to VRServer
      */
-    public MsgReceiver(String host, int port) {
+    public TCPSerializeReceiver(String host, int port) {
         super(host, port);
-        message = null;
+        serializeObj = null;
 
         try {
             in = new ObjectInputStream(getClientSock().getInputStream());
@@ -30,7 +30,7 @@ public class MsgReceiver extends TCPRequest {
      */
     void request() {
         try {
-            message = (String) in.readObject();
+            serializeObj = (T) in.readObject();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -39,12 +39,12 @@ public class MsgReceiver extends TCPRequest {
     }
 
     /**
-     * Get the message we got from request() instance method.
+     * Get the serializeObj we got from request() instance method.
      *
-     * @return message from request()
+     * @return serializeObj from request()
      */
-    public String getMessage() {
-        assert message != null;
-        return message;
+    public T getSerializeObj() {
+        assert serializeObj != null;
+        return serializeObj;
     }
 }

@@ -178,13 +178,13 @@ public class VRPlayer {
             if (currSegTop.get() < manifestCreator.getVideoSegmentAmount()) {
                 // 1. request fov with the key frame metadata from VRServer
                 // TODO suppose one video segment have 10 frames temporarily, check out storage/segment.py
-                SerializeRequest metadataRequest = new SerializeRequest(host, port, fovTraces.get(currSegTop.get() * 10));
+                TCPSerializeRequest metadataRequest = new TCPSerializeRequest<FOVMetadata>(host, port, fovTraces.get(currSegTop.get() * 10));
                 metadataRequest.request();
 
                 // 2. get response from VRServer which indicate "FULL" or "FOV"
-                MsgReceiver msgReceiver = new MsgReceiver(host, port);
+                TCPSerializeReceiver msgReceiver = new TCPSerializeReceiver<String>(host, port);
                 msgReceiver.request();
-                System.out.println(msgReceiver.getMessage());
+                System.out.println(msgReceiver.getSerializeObj());
 
                 // 3. download video segment from VRServer
                 // TODO if FOV then:
@@ -192,7 +192,9 @@ public class VRPlayer {
                 // TODO 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
                 // TODO 3-2  if all the frames matches, send back "GOOD"
                 int localSegTop = currSegTop.get() + 1;
-                VideoSegmentDownloader videoSegmentDownloader = new VideoSegmentDownloader(host, port, segmentPath, segFilename, localSegTop, (int) manifestCreator.getVideoSegmentLength(localSegTop));
+                VideoSegmentDownloader videoSegmentDownloader =
+                        new VideoSegmentDownloader(host, port, segmentPath, segFilename, localSegTop,
+                                (int) manifestCreator.getVideoSegmentLength(localSegTop));
                 try {
                     videoSegmentDownloader.request();
                 } catch (IOException e) {
