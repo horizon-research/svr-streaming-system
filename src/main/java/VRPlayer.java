@@ -24,7 +24,6 @@ public class VRPlayer {
     Manifest manifest;
     private static final int TOTAL_SEG_FRAME = 10;
     private static final int USER_REQUEST_FREQUENCY = 30;
-    private static final double FOV_THRESHOLD = 0.9;
 
     private SegmentDecoder segmentDecoder;
     private String host;
@@ -71,10 +70,10 @@ public class VRPlayer {
         //frame layout
         mainPanel.setLayout(null);
         mainPanel.add(iconLabel);
-        iconLabel.setBounds(0, 0, 1280, 720);
+        iconLabel.setBounds(0, 0, FOVProtocol.FOV_SIZE_WIDTH, FOVProtocol.FOV_SIZE_HEIGHT);
 
         vrPlayerFrame.getContentPane().add(mainPanel, BorderLayout.CENTER);
-        vrPlayerFrame.setSize(new Dimension(1280, 720));
+        vrPlayerFrame.setSize(new Dimension(FOVProtocol.FOV_SIZE_WIDTH, FOVProtocol.FOV_SIZE_HEIGHT));
         vrPlayerFrame.setVisible(true);
 
         imageRenderingTimer = new Timer(15, new guiTimerListener());
@@ -208,27 +207,43 @@ public class VRPlayer {
                 currSegTop.getAndSet(localSegTop);
 
                 if (predPathMsg == FOVProtocol.FULL) {
-                    System.out.println("[DEBUG] download full-size video segment: " + currSegTop.get());
+                    System.out.println("[DEBUG] download full-size video segment #" + currSegTop.get());
                 } else if (FOVProtocol.isFOV(predPathMsg)) {
-                    // TODO 3-1. check whether the other video frames (exclude key frame) does not match fov
-                    // TODO 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
-                    // TODO 3-2  if all the frames matches, send back "GOOD"
-                    System.out.println("[DEBUG] download fov-size video segment: " + currSegTop.get());
+                    // 3-1. check whether the other video frames (exclude key frame) does not match fov
+                    // 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
+                    // 3-2  if all the frames matches, send back "GOOD"
+                    System.out.println("[DEBUG] download fov-size video segment #" + currSegTop.get());
 
-                    // compare user-fov and the segment server sent
+                    // compare all the user-fov frames exclude for key frame with the predicted fov
                     Vector<FOVMetadata> pathMetadataVec = manifest.getPredMetaDataVec().get(localSegTop).getPathVec();
                     FOVMetadata pathMetadata = pathMetadataVec.get(predPathMsg);
+                    int secondDownloadMsg = FOVProtocol.GOOD;
                     for (int i = localSegTop; i < localSegTop + TOTAL_SEG_FRAME; i++) {
                         FOVMetadata userFov = fovTraces.get(i);
-                        // TODO check the coverage of two viewport
                         System.out.println("user fov: " + userFov);
                         System.out.println("path metadata: " + pathMetadata);
                         System.out.println("overlap ratio: " + pathMetadata.getOverlapRate(userFov));
+                        if (pathMetadata.getOverlapRate(userFov) < FOVProtocol.THRESHOLD) {
+                            secondDownloadMsg = FOVProtocol.BAD;
+                            break;
+                        }
                     }
 
                     // send back GOOD for all-hit BAD for any fov-miss
-                    TCPSerializeSender finRequest = new TCPSerializeSender<Integer>(host, port, FOVProtocol.GOOD);
+                    TCPSerializeSender finRequest = new TCPSerializeSender<Integer>(host, port, secondDownloadMsg);
                     finRequest.request();
+
+                    // receive full size video segment if send back BAD
+                    if (secondDownloadMsg == FOVProtocol.BAD) {
+                        videoSegmentDownloader =
+                                new VideoSegmentDownloader(host, port, segmentPath, "workaround", localSegTop,
+                                        (int) manifest.getVideoSegmentLength(localSegTop));
+                        try {
+                            videoSegmentDownloader.request();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 } else {
                     // should never go here
                     assert (false);

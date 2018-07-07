@@ -6,8 +6,10 @@ public class FOVProtocol {
 
     public static final int FULL_SIZE_WIDTH = 3840;
     public static final int FULL_SIZE_HEIGHT = 2160;
-    public static final int FOV_SIZE_WIDTH = 1600;
-    public static final int FOV_SIZE_HEIGHT = 1600;
+    public static final int FOV_SIZE_WIDTH = 1800;
+    public static final int FOV_SIZE_HEIGHT = 1800;
+
+    public static final double THRESHOLD = 0.92;
 
     public static String print(int code) {
         switch (code) {
