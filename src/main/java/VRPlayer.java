@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -21,6 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class VRPlayer {
     Manifest manifest;
+    private static final int TOTAL_SEG_FRAME = 10;
+    private static final int USER_REQUEST_FREQUENCY = 30;
 
     private SegmentDecoder segmentDecoder;
     private String host;
@@ -84,7 +87,7 @@ public class VRPlayer {
         // Setup user fov trace object
         fovTraces = new FOVTraces(traceFile);
 
-        // Download manifest file
+        // Download manifest file and feed it into manifest object
         ManifestDownloader manifestDownloader = new ManifestDownloader(host, port, "manifest-client.txt");
         try {
             manifestDownloader.request();
@@ -148,7 +151,7 @@ public class VRPlayer {
     private class NetworkHandler implements Runnable {
         // Request video segment every tick-tock
         public void run() {
-            Timer fovRequestTimer = new Timer(30, new fovRequestTimerListener());
+            Timer fovRequestTimer = new Timer(USER_REQUEST_FREQUENCY, new fovRequestTimerListener());
             fovRequestTimer.setInitialDelay(0);
             fovRequestTimer.setCoalesce(false);
             fovRequestTimer.start();
@@ -180,19 +183,17 @@ public class VRPlayer {
             if (currSegTop.get() < manifest.getVideoSegmentAmount()) {
                 // 1. request fov with the key frame metadata from VRServer
                 // TODO suppose one video segment have 10 frames temporarily, check out storage/segment.py
-                TCPSerializeSender metadataRequest = new TCPSerializeSender<FOVMetadata>(host, port, fovTraces.get(currSegTop.get() * 10));
+                int keyFrameID = currSegTop.get() * TOTAL_SEG_FRAME;
+                TCPSerializeSender metadataRequest = new TCPSerializeSender<FOVMetadata>(host, port, fovTraces.get(keyFrameID));
                 metadataRequest.request();
 
                 // 2. get response from VRServer which indicate "FULL" or "FOV"
-                TCPSerializeReceiver msgReceiver = new TCPSerializeReceiver<String>(host, port);
+                TCPSerializeReceiver msgReceiver = new TCPSerializeReceiver<Integer>(host, port);
                 msgReceiver.request();
-                System.out.println(msgReceiver.getSerializeObj());
+                int sizeMsg = (Integer) msgReceiver.getSerializeObj();
+                System.out.println("video segment size message: " + FOVProtocol.print(sizeMsg));
 
                 // 3. download video segment from VRServer
-                // TODO if FOV then:
-                // TODO 3-1. check whether the other video frames (exclude key frame) does not match fov
-                // TODO 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
-                // TODO 3-2  if all the frames matches, send back "GOOD"
                 int localSegTop = currSegTop.get() + 1;
                 VideoSegmentDownloader videoSegmentDownloader =
                         new VideoSegmentDownloader(host, port, segmentPath, segFilename, localSegTop,
@@ -202,10 +203,31 @@ public class VRPlayer {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                // tell video decode thread the currSetTop has changed (new segment file has created)
                 currSegTop.getAndSet(localSegTop);
-                System.out.println("[DEBUG] currSegTop (video segment we now have downloaded): " + currSegTop.get());
 
-                // if FULL then we are done
+                if (sizeMsg == FOVProtocol.FULL) {
+                    System.out.println("[DEBUG] download full-size video segment: " + currSegTop.get());
+                } else if (sizeMsg == FOVProtocol.FOV) {
+                    // TODO 3-1. check whether the other video frames (exclude key frame) does not match fov
+                    // TODO 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
+                    // TODO 3-2  if all the frames matches, send back "GOOD"
+                    System.out.println("[DEBUG] download fov-size video segment: " + currSegTop.get());
+
+                    // compare user-fov and the segment server sent
+                    Vector<FOVMetadata> pathMetadataVec = manifest.getPredMetaDataVec().get(localSegTop).getPathVec();
+                    for (int i = localSegTop; i < localSegTop + TOTAL_SEG_FRAME; i++) {
+                        FOVMetadata userFov = fovTraces.get(i);
+                        FOVMetadata pathMetadata = pathMetadataVec.get(0); // server should also send back the path id, so we can fill it here
+                    }
+
+                    // send back GOOD for all-hit BAD for any fov-miss
+                    TCPSerializeSender finRequest = new TCPSerializeSender<Integer>(host, port, FOVProtocol.GOOD);
+                    finRequest.request();
+                } else {
+                    // should never go here
+                    assert (false);
+                }
             }
         }
     }

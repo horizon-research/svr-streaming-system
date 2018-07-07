@@ -11,14 +11,19 @@ import java.util.Vector;
  */
 public class Manifest implements Serializable {
     private int length;
-    private Vector<VideoSegmentMetaData> fileMetadataVec;
+    private Vector<VideoSegmentMetaData> predMetaDataVec;
 
-    private class VideoSegmentMetaData {
-        Vector<FOVMetadata> fovMetadataVec;
-        long size;
-        VideoSegmentMetaData(Vector<FOVMetadata> fovMetadataVec, long size) {
-            this.fovMetadataVec = fovMetadataVec;
+    public class VideoSegmentMetaData {
+        private Vector<FOVMetadata> pathVec;
+        private long size;
+
+        VideoSegmentMetaData(Vector<FOVMetadata> pathVec, long size) {
+            this.pathVec = pathVec;
             this.size = size;
+        }
+
+        public Vector<FOVMetadata> getPathVec() {
+            return pathVec;
         }
     }
 
@@ -65,11 +70,11 @@ public class Manifest implements Serializable {
 
         // get video segment size and feed into
         File storageDirectory = new File(storagePath);
-        fileMetadataVec = new Vector<VideoSegmentMetaData>();
+        predMetaDataVec = new Vector<VideoSegmentMetaData>();
         this.length = 0;
 
         // padding
-        fileMetadataVec.add(new VideoSegmentMetaData(null, -1L));
+        predMetaDataVec.add(new VideoSegmentMetaData(null, -1L));
 
         if (storageDirectory.exists() && storageDirectory.isDirectory()) {
             File[] dirList = storageDirectory.listFiles();
@@ -82,15 +87,15 @@ public class Manifest implements Serializable {
                 }
             });
             for (File f : dirList) {
-                int size = fileMetadataVec.size();
-                fileMetadataVec.add(new VideoSegmentMetaData(fovMetadata2DVec.get(size), f.length()));
+                int size = predMetaDataVec.size();
+                predMetaDataVec.add(new VideoSegmentMetaData(fovMetadata2DVec.get(size), f.length()));
             }
         } else {
             System.err.println(storagePath + " should be a directory!");
             System.exit(1);
         }
 
-        this.length = fileMetadataVec.size();
+        this.length = predMetaDataVec.size();
     }
 
     /**
@@ -117,7 +122,7 @@ public class Manifest implements Serializable {
      */
     public long getVideoSegmentLength(int i) {
         assert (i > 0);
-        return fileMetadataVec.get(i).size;
+        return predMetaDataVec.get(i).size;
     }
 
     /**
@@ -126,6 +131,23 @@ public class Manifest implements Serializable {
      * @return the total of video segments.
      */
     public int getVideoSegmentAmount() {
-        return fileMetadataVec.size() - 1;
+        return predMetaDataVec.size() - 1;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Manifest{" +
+                "length=" + length +
+                ", predMetaDataVec=" + predMetaDataVec +
+                '}';
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public Vector<VideoSegmentMetaData> getPredMetaDataVec() {
+        return predMetaDataVec;
     }
 }

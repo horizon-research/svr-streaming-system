@@ -73,7 +73,8 @@ public class VRServer implements Runnable {
 
                         // TODO inspect storage to know if there is a matched video segment, if yes, send FOV, no, send FULL
                         // now just send FULL since we only have full size segment
-                        TCPSerializeSender<String> msgRequest = new TCPSerializeSender<String>(this.ss, "FULL");
+                        int videoSizeMsg = FOVProtocol.FOV;
+                        TCPSerializeSender<Integer> msgRequest = new TCPSerializeSender<Integer>(this.ss, videoSizeMsg);
                         msgRequest.request();
 
                         // send video segment
@@ -83,6 +84,16 @@ public class VRServer implements Runnable {
                         // TODO wait for "GOOD" or "BAD"
                         // TODO GOOD: continue the next iteration
                         // TODO BAD: send back full size video segment
+                        if (videoSizeMsg == FOVProtocol.FOV) {
+                            TCPSerializeReceiver<Integer> finReceiver = new TCPSerializeReceiver<Integer>(ss);
+                            finReceiver.request();
+                            int finMsg = finReceiver.getSerializeObj();
+                            System.out.println("fin message: " + FOVProtocol.print(finMsg));
+
+                            if (finMsg == FOVProtocol.BAD) {
+                                // TODO
+                            }
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

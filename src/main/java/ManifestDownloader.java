@@ -11,6 +11,6 @@ public class ManifestDownloader extends TCPDownloader {
      * @param path the location where the manifest file will be stored.
      */
     public ManifestDownloader(String host, int port, String path) {
-        super(host, port, path, 317795);
+        super(host, port, path, 316395);
     }
 }
