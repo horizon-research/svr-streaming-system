@@ -71,9 +71,8 @@ public class VRServer implements Runnable {
                         fovMetadataTCPSerializeReceiver.request();
                         System.out.println("Get user fov: " + fovMetadataTCPSerializeReceiver.getSerializeObj());
 
-                        // TODO inspect storage to know if there is a matched video segment, if yes, send FOV, no, send FULL
-                        // now just send FULL since we only have full size segment
-                        int videoSizeMsg = FOVProtocol.FOV;
+                        // TODO inspect storage to know if there is a matched video segment, if yes, send  the most-match FOV, no, send FULL
+                        int videoSizeMsg = 4;
                         TCPSerializeSender<Integer> msgRequest = new TCPSerializeSender<Integer>(this.ss, videoSizeMsg);
                         msgRequest.request();
 
@@ -84,7 +83,7 @@ public class VRServer implements Runnable {
                         // TODO wait for "GOOD" or "BAD"
                         // TODO GOOD: continue the next iteration
                         // TODO BAD: send back full size video segment
-                        if (videoSizeMsg == FOVProtocol.FOV) {
+                        if (FOVProtocol.isFOV(videoSizeMsg)) {
                             TCPSerializeReceiver<Integer> finReceiver = new TCPSerializeReceiver<Integer>(ss);
                             finReceiver.request();
                             int finMsg = finReceiver.getSerializeObj();
@@ -99,13 +98,6 @@ public class VRServer implements Runnable {
                     }
                 }
             } else {
-                // TODO manifest file now is only lines of file size, and should make it like:
-                // ex:
-                // - full
-                //   - 1 : length
-                // - fov
-                //   - 1 : coord (x, y, w, h), length
-
                 // create manifest file for VRServer to send to VRPlayer
                 manifestCreator = new Manifest("storage/rhino/", "storage/rhinos-pred.txt");
                 try {

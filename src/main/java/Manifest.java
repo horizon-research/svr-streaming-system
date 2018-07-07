@@ -59,7 +59,7 @@ public class Manifest implements Serializable {
                             fovMetadataVec = new Vector<FOVMetadata>();
                         }
                     }
-                    fovMetadataVec.add(new FOVMetadata(line));
+                    fovMetadataVec.add(new FOVMetadata(line, FOVProtocol.FOV_SIZE_WIDTH, FOVProtocol.FOV_SIZE_HEIGHT));
                 }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();

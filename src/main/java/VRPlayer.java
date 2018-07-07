@@ -24,6 +24,7 @@ public class VRPlayer {
     Manifest manifest;
     private static final int TOTAL_SEG_FRAME = 10;
     private static final int USER_REQUEST_FREQUENCY = 30;
+    private static final double FOV_THRESHOLD = 0.9;
 
     private SegmentDecoder segmentDecoder;
     private String host;
@@ -190,8 +191,8 @@ public class VRPlayer {
                 // 2. get response from VRServer which indicate "FULL" or "FOV"
                 TCPSerializeReceiver msgReceiver = new TCPSerializeReceiver<Integer>(host, port);
                 msgReceiver.request();
-                int sizeMsg = (Integer) msgReceiver.getSerializeObj();
-                System.out.println("video segment size message: " + FOVProtocol.print(sizeMsg));
+                int predPathMsg = (Integer) msgReceiver.getSerializeObj();
+                System.out.println("video segment size message: " + FOVProtocol.print(predPathMsg));
 
                 // 3. download video segment from VRServer
                 int localSegTop = currSegTop.get() + 1;
@@ -206,9 +207,9 @@ public class VRPlayer {
                 // tell video decode thread the currSetTop has changed (new segment file has created)
                 currSegTop.getAndSet(localSegTop);
 
-                if (sizeMsg == FOVProtocol.FULL) {
+                if (predPathMsg == FOVProtocol.FULL) {
                     System.out.println("[DEBUG] download full-size video segment: " + currSegTop.get());
-                } else if (sizeMsg == FOVProtocol.FOV) {
+                } else if (FOVProtocol.isFOV(predPathMsg)) {
                     // TODO 3-1. check whether the other video frames (exclude key frame) does not match fov
                     // TODO 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
                     // TODO 3-2  if all the frames matches, send back "GOOD"
@@ -216,9 +217,13 @@ public class VRPlayer {
 
                     // compare user-fov and the segment server sent
                     Vector<FOVMetadata> pathMetadataVec = manifest.getPredMetaDataVec().get(localSegTop).getPathVec();
+                    FOVMetadata pathMetadata = pathMetadataVec.get(predPathMsg);
                     for (int i = localSegTop; i < localSegTop + TOTAL_SEG_FRAME; i++) {
                         FOVMetadata userFov = fovTraces.get(i);
-                        FOVMetadata pathMetadata = pathMetadataVec.get(0); // server should also send back the path id, so we can fill it here
+                        // TODO check the coverage of two viewport
+                        System.out.println("user fov: " + userFov);
+                        System.out.println("path metadata: " + pathMetadata);
+                        System.out.println("overlap ratio: " + pathMetadata.getOverlapRate(userFov));
                     }
 
                     // send back GOOD for all-hit BAD for any fov-miss

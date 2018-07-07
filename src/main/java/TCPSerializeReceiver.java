@@ -29,7 +29,7 @@ public class TCPSerializeReceiver<T> extends TCPRequest {
     /**
      * Setup the env for receiving serializeObj from a tcp end point.
      *
-     * @param ss
+     * @param ss an already initiated server socket that is waiting for client socket.
      */
     public TCPSerializeReceiver(ServerSocket ss) {
         super(ss);
