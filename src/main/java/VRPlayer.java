@@ -1,4 +1,7 @@
 import com.google.gson.Gson;
+import org.jcodec.api.FrameGrab;
+import org.jcodec.api.JCodecException;
+import org.jcodec.common.io.NIOUtils;
 import org.jcodec.common.model.Picture;
 import org.jcodec.scale.AWTUtil;
 
@@ -9,11 +12,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -27,7 +28,6 @@ public class VRPlayer {
     public static final int VRPLAYER_WIDTH = 1200;
     public static final int VRPLAYER_HEIGHT = 1200;
 
-    private SegmentDecoder segmentDecoder;
     private String host;
     private int port;
     private String segmentPath;
@@ -38,8 +38,9 @@ public class VRPlayer {
     private JLabel iconLabel = new JLabel();
     private ImageIcon icon;
     private Timer imageRenderingTimer;
-    private AtomicInteger currSegTop;     // indicate the top video segment id could be decoded
-    private FOVTraces fovTraces;    // use currSegTop to extract fov from fovTraces
+    private int currFovSegTop;     // indicate the top video segment id could be decoded
+    private FOVTraces fovTraces;    // use currFovSegTop to extract fov from fovTraces
+    private ConcurrentLinkedQueue<Picture> frameQueue;
 
     /**
      * Construct a VRPlayer object which manage GUI, video segment downloading, and video segment decoding
@@ -57,6 +58,7 @@ public class VRPlayer {
         this.segmentPath = segmentPath;
         this.segFilename = segFilename;
         this.traceFile = trace;
+        this.frameQueue = new ConcurrentLinkedQueue<Picture>();
 
         // setup frame
         this.vrPlayerFrame.addWindowListener(new WindowAdapter() {
@@ -80,11 +82,11 @@ public class VRPlayer {
 
         imageRenderingTimer = new Timer(15, new guiTimerListener());
         imageRenderingTimer.setInitialDelay(0);
-        imageRenderingTimer.setCoalesce(false);
+        imageRenderingTimer.setCoalesce(true);
 
-        // if the currSegTop is larger than decodedSegTop then we could decode segment from
-        // #decodedSegTop+1 to #currSegTop
-        currSegTop = new AtomicInteger(0);
+        // if the currFovSegTop is larger than decodedSegTop then we could decode segment from
+        // #decodedSegTop+1 to #currFovSegTop
+        currFovSegTop = 0;
 
         // Setup user fov trace object
         fovTraces = new FOVTraces(traceFile);
@@ -104,24 +106,16 @@ public class VRPlayer {
             e.printStackTrace();
         }
 
-        // While downloading video segment we use a separate thread to
-        // decode the downloaded video segment using a decode worker thread.
-        // TODO the decoder is not using a pure java library and there is only one decode worker thread, so should improve performance
-        segmentDecoder = new SegmentDecoder(this);
-        Thread decodeThd = new Thread(segmentDecoder);
-
         // Create network handler thread
         NetworkHandler networkHandler = new NetworkHandler();
         Thread networkThd = new Thread(networkHandler);
 
         // Start main thread gui timer, video decode thread and network handler thread
         imageRenderingTimer.start();
-        decodeThd.start();
         networkThd.start();
 
         // Wait for all the worker thread to finish
         try {
-            decodeThd.join();
             networkThd.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -139,57 +133,19 @@ public class VRPlayer {
     }
 
     /**
-     * Get the largest segment id that has been downloaded.
-     *
-     * @return the largest sequential identifier of the downloaded video segment.
-     */
-    public int getCurrSegTop() {
-        return this.currSegTop.get();
-    }
-
-    /**
      * Download video segments or sending fov metadata in a separate thread.
      */
     private class NetworkHandler implements Runnable {
         // Request video segment every tick-tock
         public void run() {
-            Timer fovRequestTimer = new Timer(USER_REQUEST_FREQUENCY, new fovRequestTimerListener());
-            fovRequestTimer.setInitialDelay(0);
-            fovRequestTimer.setCoalesce(false);
-            fovRequestTimer.start();
-        }
-    }
-
-    /**
-     * The main thread timer that render image from frame queue.
-     */
-    private class guiTimerListener implements ActionListener {
-        public void actionPerformed(ActionEvent actionEvent) {
-            if (!segmentDecoder.getFrameQueue().isEmpty()) {
-                Picture picture = segmentDecoder.getFrameQueue().poll();
-                if (picture != null) {
-                    BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
-                    icon = new ImageIcon(bufferedImage);
-                    iconLabel.setIcon(icon);
-//                    System.out.println("Render icon");
-                }
-            }
-        }
-    }
-
-    /**
-     * User requests for a video segment.
-     */
-    private class fovRequestTimerListener implements ActionListener {
-        public void actionPerformed(ActionEvent actionEvent) {
-            int currLocalSegTop = currSegTop.get() + 1;
-            if (currLocalSegTop <= manifest.getVideoSegmentAmount()) {
+            while (currFovSegTop + 1 <= manifest.getVideoSegmentAmount()) {
+                int currLocalFovSegTop = currFovSegTop + 1;
                 // 1. request fov with the key frame metadata from VRServer
                 // TODO suppose one video segment have 10 frames temporarily, check out storage/segment.py
-                int keyFrameID = (currLocalSegTop - 1) * TOTAL_SEG_FRAME;
+                int keyFrameID = (currLocalFovSegTop - 1) * TOTAL_SEG_FRAME;
                 TCPSerializeSender metadataRequest = new TCPSerializeSender<FOVMetadata>(host, port, fovTraces.get(keyFrameID));
                 metadataRequest.request();
-                System.out.println("[[SEGMENT #" + currLocalSegTop + "]] send metadata to server");
+                System.out.println("[[SEGMENT #" + currLocalFovSegTop + "]] send metadata to server");
 
                 // 2. get response from VRServer which indicate "FULL" or "FOV"
                 TCPSerializeReceiver msgReceiver = new TCPSerializeReceiver<Integer>(host, port);
@@ -200,35 +156,53 @@ public class VRPlayer {
                 // 3. download video segment from VRServer
                 System.out.println("[DEBUG] download video segment");
                 VideoSegmentDownloader videoSegmentDownloader =
-                        new VideoSegmentDownloader(host, port, segmentPath, segFilename, currLocalSegTop,
-                                (int) manifest.getVideoSegmentLength(currLocalSegTop));
+                        new VideoSegmentDownloader(host, port, segmentPath, segFilename, currLocalFovSegTop,
+                                (int) manifest.getVideoSegmentLength(currLocalFovSegTop));
                 try {
                     videoSegmentDownloader.request();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 // tell video decode thread the currSetTop has changed (new segment file has created)
-                currSegTop.getAndSet(currLocalSegTop);
+                currFovSegTop = currLocalFovSegTop;
 
                 // 3-1. check whether the other video frames (exclude key frame) does not match fov
                 // 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
                 // 3-2  if all the frames matches, send back "GOOD"
                 if (FOVProtocol.isFOV(predPathMsg)) {
                     // compare all the user-fov frames exclude for key frame with the predicted fov
-                    Vector<FOVMetadata> pathMetadataVec = manifest.getPredMetaDataVec().get(currLocalSegTop).getPathVec();
+                    Vector<FOVMetadata> pathMetadataVec = manifest.getPredMetaDataVec().get(currLocalFovSegTop).getPathVec();
                     FOVMetadata pathMetadata = pathMetadataVec.get(predPathMsg);
                     int secondDownloadMsg = FOVProtocol.GOOD;
-                    for ( ; keyFrameID < currLocalSegTop * TOTAL_SEG_FRAME; keyFrameID++) {
-                        FOVMetadata userFov = fovTraces.get(keyFrameID);
-                        double coverRatio = pathMetadata.getOverlapRate(userFov);
-                        if (coverRatio < FOVProtocol.THRESHOLD) {
-                            System.out.println("fail at keyFrameID: " + keyFrameID);
-                            System.out.println("user fov: " + userFov);
-                            System.out.println("path metadata: " + pathMetadata);
-                            System.out.println("overlap ratio: " + coverRatio);
-                            secondDownloadMsg = FOVProtocol.BAD;
-                            break;
+                    int totalDecodedFrame = 0;
+                    // TODO fov file name should be corrected after storage has been prepared
+                    String filename = getSegFilenameFromId(currFovSegTop);
+                    File file = new File(getSegFilenameFromId(currFovSegTop));
+                    FrameGrab grab = null;
+                    // decode fov until fovTrace not match
+                    try {
+                        grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file));
+                        Picture picture;
+                        while (null != (picture = grab.getNativeFrame())) {
+                            FOVMetadata userFov = fovTraces.get(keyFrameID);
+                            double coverRatio = pathMetadata.getOverlapRate(userFov);
+                            if (coverRatio < FOVProtocol.THRESHOLD) {
+                                System.out.println("fail at keyFrameID: " + keyFrameID);
+                                System.out.println("user fov: " + userFov);
+                                System.out.println("path metadata: " + pathMetadata);
+                                System.out.println("overlap ratio: " + coverRatio);
+                                secondDownloadMsg = FOVProtocol.BAD;
+                                break;
+                            }
+                            frameQueue.add(picture);
+
+                            keyFrameID++;
+                            totalDecodedFrame++;
                         }
+                    } catch (JCodecException je1) {
+                        je1.printStackTrace();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
                     }
 
                     // send back GOOD for all-hit BAD for any fov-miss
@@ -239,15 +213,24 @@ public class VRPlayer {
                     // receive full size video segment if send back BAD
                     if (secondDownloadMsg == FOVProtocol.BAD) {
                         videoSegmentDownloader =
-                                new VideoSegmentDownloader(host, port, segmentPath, "workaround", currLocalSegTop,
-                                        (int) manifest.getVideoSegmentLength(currLocalSegTop));
+                                new VideoSegmentDownloader(host, port, segmentPath, "workaround", currLocalFovSegTop,
+                                        (int) manifest.getVideoSegmentLength(currLocalFovSegTop));
                         System.out.println("[DEBUG] request for full size video segment as compensation");
                         try {
                             videoSegmentDownloader.request();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+
+                        // TODO the file name of full size video segment is the same as fov video segment for now
+                        System.out.println("[DEBUG] Start decode from frame: " + totalDecodedFrame);
+                        filename = getSegFilenameFromId(currFovSegTop);
+                        decodeWholeSegment(filename);
                     }
+                } else if (FOVProtocol.isFull(predPathMsg)) {
+                    // TODO the file name of full size video segment is the same as fov video segment for now
+                    String filename = getSegFilenameFromId(currFovSegTop);
+                    decodeWholeSegment(filename);
                 } else {
                     // should never go here
                     assert (false);
@@ -255,6 +238,41 @@ public class VRPlayer {
 
                 System.out.println("---------------------------------------------------------");
             }
+        }
+    }
+
+    /**
+     * The main thread timer that render image from frame queue.
+     */
+    private class guiTimerListener implements ActionListener {
+        public void actionPerformed(ActionEvent actionEvent) {
+            if (!frameQueue.isEmpty()) {
+                Picture picture = frameQueue.poll();
+                if (picture != null) {
+                    BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
+                    icon = new ImageIcon(bufferedImage);
+                    iconLabel.setIcon(icon);
+//                    System.out.println("[RENDER] Render icon, picture size: " + frameQueue.size());
+                }
+            }
+        }
+    }
+
+    private void decodeWholeSegment(String filename) {
+        File file = new File(filename);
+        FrameGrab grab = null;
+        try {
+            grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file));
+            Picture picture;
+            while (null != (picture = grab.getNativeFrame())) {
+//                System.out.println("[DECODE] queue size: " + frameQueue.size());
+//                System.out.println("[DECODE] " + filename + ": " + picture.getWidth() + "x" + picture.getHeight() + " " + picture.getColor());
+                frameQueue.add(picture);
+            }
+        } catch (JCodecException je1) {
+            je1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
         }
     }
 
