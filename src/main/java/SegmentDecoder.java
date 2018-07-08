@@ -42,7 +42,7 @@ public class SegmentDecoder implements Runnable {
         while (decodedSegTop < vrPlayer.manifest.getVideoSegmentAmount()) {
             int currSegTop = vrPlayer.getCurrSegTop();
             if (currSegTop > decodedSegTop) {
-                System.out.println("[DEBUG] currSegTop: " + currSegTop + ", decodedSegTop: " + decodedSegTop);
+//                System.out.println("[DEBUG] currSegTop: " + currSegTop + ", decodedSegTop: " + decodedSegTop);
                 int start = decodedSegTop + 1;
                 for (int i = start; i <= currSegTop; i++) {
                     String filename = vrPlayer.getSegFilenameFromId(i);
@@ -52,7 +52,7 @@ public class SegmentDecoder implements Runnable {
                         grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file));
                         Picture picture;
                         while (null != (picture = grab.getNativeFrame())) {
-                            System.out.println(filename + ": " + picture.getWidth() + "x" + picture.getHeight() + " " + picture.getColor());
+//                            System.out.println(filename + ": " + picture.getWidth() + "x" + picture.getHeight() + " " + picture.getColor());
                             frameQueue.add(picture);
                         }
                     } catch (JCodecException je1) {

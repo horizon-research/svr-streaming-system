@@ -24,6 +24,8 @@ public class VRPlayer {
     Manifest manifest;
     private static final int TOTAL_SEG_FRAME = 10;
     private static final int USER_REQUEST_FREQUENCY = 30;
+    public static final int VRPLAYER_WIDTH = 1200;
+    public static final int VRPLAYER_HEIGHT = 1200;
 
     private SegmentDecoder segmentDecoder;
     private String host;
@@ -70,10 +72,10 @@ public class VRPlayer {
         //frame layout
         mainPanel.setLayout(null);
         mainPanel.add(iconLabel);
-        iconLabel.setBounds(0, 0, FOVProtocol.FOV_SIZE_WIDTH, FOVProtocol.FOV_SIZE_HEIGHT);
+        iconLabel.setBounds(0, 0, VRPLAYER_WIDTH, VRPLAYER_HEIGHT);
 
         vrPlayerFrame.getContentPane().add(mainPanel, BorderLayout.CENTER);
-        vrPlayerFrame.setSize(new Dimension(FOVProtocol.FOV_SIZE_WIDTH, FOVProtocol.FOV_SIZE_HEIGHT));
+        vrPlayerFrame.setSize(new Dimension(VRPLAYER_WIDTH, VRPLAYER_HEIGHT));
         vrPlayerFrame.setVisible(true);
 
         imageRenderingTimer = new Timer(15, new guiTimerListener());
@@ -169,7 +171,7 @@ public class VRPlayer {
                     BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
                     icon = new ImageIcon(bufferedImage);
                     iconLabel.setIcon(icon);
-                    System.out.println("Render icon");
+//                    System.out.println("Render icon");
                 }
             }
         }
@@ -180,50 +182,50 @@ public class VRPlayer {
      */
     private class fovRequestTimerListener implements ActionListener {
         public void actionPerformed(ActionEvent actionEvent) {
-            if (currSegTop.get() < manifest.getVideoSegmentAmount()) {
+            int currLocalSegTop = currSegTop.get() + 1;
+            if (currLocalSegTop <= manifest.getVideoSegmentAmount()) {
                 // 1. request fov with the key frame metadata from VRServer
                 // TODO suppose one video segment have 10 frames temporarily, check out storage/segment.py
-                int keyFrameID = currSegTop.get() * TOTAL_SEG_FRAME;
+                int keyFrameID = (currLocalSegTop - 1) * TOTAL_SEG_FRAME;
                 TCPSerializeSender metadataRequest = new TCPSerializeSender<FOVMetadata>(host, port, fovTraces.get(keyFrameID));
                 metadataRequest.request();
+                System.out.println("[[SEGMENT #" + currLocalSegTop + "]] send metadata to server");
 
                 // 2. get response from VRServer which indicate "FULL" or "FOV"
                 TCPSerializeReceiver msgReceiver = new TCPSerializeReceiver<Integer>(host, port);
                 msgReceiver.request();
                 int predPathMsg = (Integer) msgReceiver.getSerializeObj();
-                System.out.println("video segment size message: " + FOVProtocol.print(predPathMsg));
+                System.out.println("[DEBUG] get size message: " + FOVProtocol.print(predPathMsg));
 
                 // 3. download video segment from VRServer
-                int localSegTop = currSegTop.get() + 1;
+                System.out.println("[DEBUG] download video segment");
                 VideoSegmentDownloader videoSegmentDownloader =
-                        new VideoSegmentDownloader(host, port, segmentPath, segFilename, localSegTop,
-                                (int) manifest.getVideoSegmentLength(localSegTop));
+                        new VideoSegmentDownloader(host, port, segmentPath, segFilename, currLocalSegTop,
+                                (int) manifest.getVideoSegmentLength(currLocalSegTop));
                 try {
                     videoSegmentDownloader.request();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 // tell video decode thread the currSetTop has changed (new segment file has created)
-                currSegTop.getAndSet(localSegTop);
+                currSegTop.getAndSet(currLocalSegTop);
 
-                if (predPathMsg == FOVProtocol.FULL) {
-                    System.out.println("[DEBUG] download full-size video segment #" + currSegTop.get());
-                } else if (FOVProtocol.isFOV(predPathMsg)) {
-                    // 3-1. check whether the other video frames (exclude key frame) does not match fov
-                    // 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
-                    // 3-2  if all the frames matches, send back "GOOD"
-                    System.out.println("[DEBUG] download fov-size video segment #" + currSegTop.get());
-
+                // 3-1. check whether the other video frames (exclude key frame) does not match fov
+                // 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
+                // 3-2  if all the frames matches, send back "GOOD"
+                if (FOVProtocol.isFOV(predPathMsg)) {
                     // compare all the user-fov frames exclude for key frame with the predicted fov
-                    Vector<FOVMetadata> pathMetadataVec = manifest.getPredMetaDataVec().get(localSegTop).getPathVec();
+                    Vector<FOVMetadata> pathMetadataVec = manifest.getPredMetaDataVec().get(currLocalSegTop).getPathVec();
                     FOVMetadata pathMetadata = pathMetadataVec.get(predPathMsg);
                     int secondDownloadMsg = FOVProtocol.GOOD;
-                    for (int i = localSegTop; i < localSegTop + TOTAL_SEG_FRAME; i++) {
+                    for (int i = currLocalSegTop; i < currLocalSegTop + TOTAL_SEG_FRAME; i++) {
                         FOVMetadata userFov = fovTraces.get(i);
-                        System.out.println("user fov: " + userFov);
-                        System.out.println("path metadata: " + pathMetadata);
-                        System.out.println("overlap ratio: " + pathMetadata.getOverlapRate(userFov));
-                        if (pathMetadata.getOverlapRate(userFov) < FOVProtocol.THRESHOLD) {
+                        double coverRatio = pathMetadata.getOverlapRate(userFov);
+                        if (coverRatio < FOVProtocol.THRESHOLD) {
+                            System.out.println("[DEBUG] fov prediction fails");
+                            System.out.println("user fov: " + userFov);
+                            System.out.println("path metadata: " + pathMetadata);
+                            System.out.println("overlap ratio: " + coverRatio);
                             secondDownloadMsg = FOVProtocol.BAD;
                             break;
                         }
@@ -232,12 +234,14 @@ public class VRPlayer {
                     // send back GOOD for all-hit BAD for any fov-miss
                     TCPSerializeSender finRequest = new TCPSerializeSender<Integer>(host, port, secondDownloadMsg);
                     finRequest.request();
+                    System.out.println("[DEBUG] send back " + FOVProtocol.print(secondDownloadMsg));
 
                     // receive full size video segment if send back BAD
                     if (secondDownloadMsg == FOVProtocol.BAD) {
                         videoSegmentDownloader =
-                                new VideoSegmentDownloader(host, port, segmentPath, "workaround", localSegTop,
-                                        (int) manifest.getVideoSegmentLength(localSegTop));
+                                new VideoSegmentDownloader(host, port, segmentPath, "workaround", currLocalSegTop,
+                                        (int) manifest.getVideoSegmentLength(currLocalSegTop));
+                        System.out.println("[DEBUG] request for full size video segment as compensation");
                         try {
                             videoSegmentDownloader.request();
                         } catch (IOException e) {
@@ -248,6 +252,8 @@ public class VRPlayer {
                     // should never go here
                     assert (false);
                 }
+
+                System.out.println("---------------------------------------------------------");
             }
         }
     }

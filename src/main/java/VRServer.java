@@ -51,8 +51,6 @@ public class VRServer implements Runnable {
         FileInputStream fis = new FileInputStream(file);
         byte[] buffer = new byte[BUF_SIZE];
 
-        System.out.println("Send " + file + " from VRServer");
-
         while (fis.read(buffer) > 0) {
             dos.write(buffer);
         }
@@ -77,7 +75,7 @@ public class VRServer implements Runnable {
 
                         // inspect storage manifest to know if there is a matched video segment, if yes, send the most-match FOV, no, send FULL
                         FOVMetadata userFOVMetaData = fovMetadataTCPSerializeReceiver.getSerializeObj();
-                        System.out.println("Get user fov: " + userFOVMetaData);
+                        System.out.println("[[SEGMENT #" + segId + "]] Get user fov: " + userFOVMetaData);
                         Vector<FOVMetadata> pathMetadataVec = manifest.getPredMetaDataVec().get(segId).getPathVec();
                         int videoSizeMsg = FOVProtocol.FULL;
                         for (int i = 0; i < pathMetadataVec.size(); i++) {
@@ -93,9 +91,16 @@ public class VRServer implements Runnable {
                         TCPSerializeSender<Integer> msgRequest = new TCPSerializeSender<Integer>(this.ss, videoSizeMsg);
                         msgRequest.request();
 
+                        // TODO choose the right video segment to send, now always send full size video segment
                         // send video segment
                         clientSock = ss.accept();
-                        sendFile(clientSock, Utilities.getSegmentName(videoSegmentDir, this.storageFilename, segId));
+                        String filename = Utilities.getSegmentName(videoSegmentDir, this.storageFilename, segId);
+                        sendFile(clientSock, filename);
+                        if (videoSizeMsg == FOVProtocol.FULL) {
+                            System.out.println("[1 FULL] Send " + filename + " from VRServer");
+                        } else {
+                            System.out.println("[1 FOV] Send " + filename + " from VRServer");
+                        }
 
                         // wait for "GOOD" or "BAD" message from VRPlayer
                         // if GOOD: continue the next iteration
@@ -104,14 +109,17 @@ public class VRServer implements Runnable {
                             TCPSerializeReceiver<Integer> finReceiver = new TCPSerializeReceiver<Integer>(ss);
                             finReceiver.request();
                             int finMsg = finReceiver.getSerializeObj();
-                            System.out.println("fin message: " + FOVProtocol.print(finMsg));
+                            System.out.println("[DEBUG] fin message: " + FOVProtocol.print(finMsg));
 
                             if (finMsg == FOVProtocol.BAD) {
                                 // send video segment
                                 clientSock = ss.accept();
                                 sendFile(clientSock, Utilities.getSegmentName(videoSegmentDir, this.storageFilename, segId));
+                                System.out.println("[2 FULL] Send " + filename + " from VRServer");
                             }
                         }
+
+                        System.out.println("---------------------------------------------------------");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
