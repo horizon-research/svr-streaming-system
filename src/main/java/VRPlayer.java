@@ -218,11 +218,11 @@ public class VRPlayer {
                     Vector<FOVMetadata> pathMetadataVec = manifest.getPredMetaDataVec().get(currLocalSegTop).getPathVec();
                     FOVMetadata pathMetadata = pathMetadataVec.get(predPathMsg);
                     int secondDownloadMsg = FOVProtocol.GOOD;
-                    for (int i = currLocalSegTop; i < currLocalSegTop + TOTAL_SEG_FRAME; i++) {
-                        FOVMetadata userFov = fovTraces.get(i);
+                    for ( ; keyFrameID < currLocalSegTop * TOTAL_SEG_FRAME; keyFrameID++) {
+                        FOVMetadata userFov = fovTraces.get(keyFrameID);
                         double coverRatio = pathMetadata.getOverlapRate(userFov);
                         if (coverRatio < FOVProtocol.THRESHOLD) {
-                            System.out.println("[DEBUG] fov prediction fails");
+                            System.out.println("fail at keyFrameID: " + keyFrameID);
                             System.out.println("user fov: " + userFov);
                             System.out.println("path metadata: " + pathMetadata);
                             System.out.println("overlap ratio: " + coverRatio);
