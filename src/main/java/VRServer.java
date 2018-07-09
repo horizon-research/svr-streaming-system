@@ -75,7 +75,7 @@ public class VRServer implements Runnable {
 
                         // inspect storage manifest to know if there is a matched video segment, if yes, send the most-match FOV, no, send FULL
                         FOVMetadata userFOVMetaData = fovMetadataTCPSerializeReceiver.getSerializeObj();
-                        System.out.println("[[SEGMENT #" + segId + "]] Get user fov: " + userFOVMetaData);
+                        System.out.println("[[STEP 2 SEGMENT #" + segId + "]] Get user fov: " + userFOVMetaData);
                         Vector<FOVMetadata> pathMetadataVec = manifest.getPredMetaDataVec().get(segId).getPathVec();
                         int videoSizeMsg = FOVProtocol.FULL;
                         for (int i = 0; i < pathMetadataVec.size(); i++) {
@@ -83,13 +83,13 @@ public class VRServer implements Runnable {
                             double ratio = pathMetadata.getOverlapRate(userFOVMetaData);
                             if (ratio >= FOVProtocol.THRESHOLD) {
                                 videoSizeMsg = i;
-                                System.out.println("[DEBUG] videoSizeMsg id: " + videoSizeMsg);
                                 break;
                             }
                         }
 
-                        TCPSerializeSender<Integer> msgRequest = new TCPSerializeSender<Integer>(this.ss, videoSizeMsg);
-                        msgRequest.request();
+                        TCPSerializeSender<Integer> sizeMsgRequest = new TCPSerializeSender<Integer>(this.ss, videoSizeMsg);
+                        sizeMsgRequest.request();
+                        System.out.println("[STEP 3] send video size msg: " + videoSizeMsg);
 
                         // TODO choose the right video segment to send, now always send full size video segment
                         // send video segment
@@ -97,9 +97,9 @@ public class VRServer implements Runnable {
                         String filename = Utilities.getSegmentName(videoSegmentDir, this.storageFilename, segId);
                         sendFile(clientSock, filename);
                         if (videoSizeMsg == FOVProtocol.FULL) {
-                            System.out.println("[1 FULL] Send " + filename + " from VRServer");
+                            System.out.println("[STEP 5] Send full size: " + filename + " from VRServer");
                         } else {
-                            System.out.println("[1 FOV] Send " + filename + " from VRServer");
+                            System.out.println("[STEP 5] Send fov size: " + filename + " from VRServer");
                         }
 
                         // wait for "GOOD" or "BAD" message from VRPlayer
@@ -109,13 +109,13 @@ public class VRServer implements Runnable {
                             TCPSerializeReceiver<Integer> finReceiver = new TCPSerializeReceiver<Integer>(ss);
                             finReceiver.request();
                             int finMsg = finReceiver.getSerializeObj();
-                            System.out.println("[DEBUG] fin message: " + FOVProtocol.print(finMsg));
+                            System.out.println("[Step 8] Receive final message: " + FOVProtocol.print(finMsg));
 
                             if (finMsg == FOVProtocol.BAD) {
                                 // send video segment
                                 clientSock = ss.accept();
                                 sendFile(clientSock, Utilities.getSegmentName(videoSegmentDir, this.storageFilename, segId));
-                                System.out.println("[2 FULL] Send " + filename + " from VRServer");
+                                System.out.println("[STEP 9] Send full size: " + filename + " from VRServer");
                             }
                         }
 
@@ -134,6 +134,7 @@ public class VRServer implements Runnable {
                 }
 
                 // send the manifest file just created
+                System.out.println("[STEP 0-1] Send manifest file to VRPlayer");
                 System.out.println("Manifest file size: " + new File(manifestFileName).length());
                 try {
                     clientSock = ss.accept();
@@ -154,10 +155,10 @@ public class VRServer implements Runnable {
      * @param args command line args.
      */
     public static void main(String[] args) {
-        VRServer vrServer = new VRServer(1988,
-                "storage/rhino",
-                "output",
-                "storage/rhinos-pred.txt");
+        VRServer vrServer = new VRServer(Integer.parseInt(args[0]),
+                args[1],
+                args[2],
+                args[3]);
         vrServer.run();
     }
 }
