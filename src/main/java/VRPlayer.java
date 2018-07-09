@@ -1,9 +1,8 @@
 import com.google.gson.Gson;
-import org.jcodec.api.FrameGrab;
-import org.jcodec.api.JCodecException;
-import org.jcodec.common.io.NIOUtils;
-import org.jcodec.common.model.Picture;
-import org.jcodec.scale.AWTUtil;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.Java2DFrameConverter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +14,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class manage frame rendering, video segment downloading, and all bunch
@@ -40,7 +38,7 @@ public class VRPlayer {
     private Timer imageRenderingTimer;
     private int currFovSegTop;     // indicate the top video segment id could be decoded
     private FOVTraces fovTraces;    // use currFovSegTop to extract fov from fovTraces
-    private ConcurrentLinkedQueue<Picture> frameQueue;
+    private ConcurrentLinkedQueue<BufferedImage> frameBufferQueue;
 
     /**
      * Construct a VRPlayer object which manage GUI, video segment downloading, and video segment decoding
@@ -58,7 +56,7 @@ public class VRPlayer {
         this.segmentPath = segmentPath;
         this.segFilename = segFilename;
         this.traceFile = trace;
-        this.frameQueue = new ConcurrentLinkedQueue<Picture>();
+        this.frameBufferQueue = new ConcurrentLinkedQueue<BufferedImage>();
 
         // setup frame
         this.vrPlayerFrame.addWindowListener(new WindowAdapter() {
@@ -171,14 +169,24 @@ public class VRPlayer {
                     int secondDownloadMsg = FOVProtocol.GOOD;
                     int totalDecodedFrame = 0;
                     // TODO fov file name should be corrected after storage has been prepared
+<<<<<<< Updated upstream
                     String filename = getSegFilenameFromId(currFovSegTop);
                     File file = new File(getSegFilenameFromId(currFovSegTop));
                     FrameGrab grab = null;
+=======
+                    String videoFilename = getSegFilenameFromId(currFovSegTop);
+                    File file = new File(videoFilename);
+>>>>>>> Stashed changes
                     // decode fov until fovTrace not match
-                    try {
-                        grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file));
-                        Picture picture;
-                        while (null != (picture = grab.getNativeFrame())) {
+                     try {
+                        Java2DFrameConverter converter = new Java2DFrameConverter();
+                        FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(videoFilename);
+                        frameGrabber.start();
+
+                        Frame frame;
+                        // TODO set frame rate base on server info
+                        // double frameRate = frameGrabber.getFrameRate();
+                        for (int ii = 0; ii < frameGrabber.getLengthInVideoFrames(); ii++) {
                             FOVMetadata userFov = fovTraces.get(keyFrameID);
                             double coverRatio = pathMetadata.getOverlapRate(userFov);
                             if (coverRatio < FOVProtocol.THRESHOLD) {
@@ -188,16 +196,19 @@ public class VRPlayer {
                                 System.out.println("overlap ratio: " + coverRatio);
                                 secondDownloadMsg = FOVProtocol.BAD;
                                 break;
+                            } else {
+                                frameGrabber.setFrameNumber(ii);
+                                frame = frameGrabber.grab();
+                                BufferedImage b = converter.convert(frame);
+                                if (b != null)
+                                    frameBufferQueue.add(b);
+                                keyFrameID++;
+                                totalDecodedFrame++;
                             }
-                            frameQueue.add(picture);
-
-                            keyFrameID++;
-                            totalDecodedFrame++;
                         }
-                    } catch (JCodecException je1) {
-                        je1.printStackTrace();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                        frameGrabber.stop();
+                    } catch (FrameGrabber.Exception e) {
+                        e.printStackTrace();
                     }
 
                     // send back GOOD for all-hit BAD for any fov-miss
@@ -219,13 +230,26 @@ public class VRPlayer {
 
                         // TODO the file name of full size video segment is the same as fov video segment for now
                         System.out.println("[DEBUG] Start decode from frame: " + totalDecodedFrame);
+<<<<<<< Updated upstream
                         filename = getSegFilenameFromId(currFovSegTop);
                         decodeSegment(filename, totalDecodedFrame+1);
+=======
+                        videoFilename = getSegFilenameFromId(currFovSegTop);
+                        try {
+                            decodeVideoSegment(videoFilename, totalDecodedFrame+1);
+                        } catch (FrameGrabber.Exception e) {
+                            e.printStackTrace();
+                        }
+>>>>>>> Stashed changes
                     }
                 } else if (FOVProtocol.isFull(predPathMsg)) {
                     // TODO the file name of full size video segment is the same as fov video segment for now
                     String filename = getSegFilenameFromId(currFovSegTop);
-                    decodeWholeSegment(filename);
+                    try {
+                        decodeVideoSegment(filename);
+                    } catch (FrameGrabber.Exception e) {
+                        e.printStackTrace();
+                    }
                 } else {
                     // should never go here
                     assert (false);
@@ -242,10 +266,9 @@ public class VRPlayer {
      */
     private class guiTimerListener implements ActionListener {
         public void actionPerformed(ActionEvent actionEvent) {
-            if (!frameQueue.isEmpty()) {
-                Picture picture = frameQueue.poll();
-                if (picture != null) {
-                    BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
+            if (!frameBufferQueue.isEmpty()) {
+                BufferedImage bufferedImage = frameBufferQueue.poll();
+                if (bufferedImage != null) {
                     icon = new ImageIcon(bufferedImage);
                     iconLabel.setIcon(icon);
 //                    System.out.println("[RENDER] Render icon, picture size: " + frameQueue.size());
@@ -255,41 +278,33 @@ public class VRPlayer {
     }
 
     /**
-     * Decode all the frames in the specified video segment
+     * Decode all the frames in the specified video segment using JavaCV
      *
-     * @param filename the path to the full-sized video segment
+     * @param path the path to the full-sized video segment
      */
-    private void decodeWholeSegment(String filename) {
-        File file = new File(filename);
-        FrameGrab grab = null;
-        try {
-            grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file));
-            Picture picture;
-            while (null != (picture = grab.getNativeFrame())) {
-//                System.out.println("[DECODE] queue size: " + frameQueue.size());
-//                System.out.println("[DECODE] " + filename + ": " + picture.getWidth() + "x" + picture.getHeight() + " " + picture.getColor());
-                frameQueue.add(picture);
-            }
-        } catch (JCodecException je1) {
-            je1.printStackTrace();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
+    private void decodeVideoSegment(String path) throws FrameGrabber.Exception {
+        decodeVideoSegment(path, 0);
     }
 
-    private void decodeSegment(String filename, int from) {
-        File file = new File(filename);
-        FrameGrab grab = null;
-        try {
-            for (int i = from; i < TOTAL_SEG_FRAME; i++) {
-                Picture picture = FrameGrab.getFrameFromFile(file, from);;
-                frameQueue.add(picture);
-            }
-        } catch (JCodecException je1) {
-            je1.printStackTrace();
-        } catch (IOException e1) {
-            e1.printStackTrace();
+    /**
+     * Decode all the frames in the specified video segment using JavaCV
+     *
+     * @param path the path to the full-sized video segment
+     */
+    private void decodeVideoSegment(String path, int from) throws FrameGrabber.Exception {
+        Java2DFrameConverter converter = new Java2DFrameConverter();
+        FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(path);
+        frameGrabber.start();
+        Frame frame;
+        double frameRate = frameGrabber.getFrameRate(); // TODO
+        for (int ii = from; ii < frameGrabber.getLengthInVideoFrames(); ii++) {
+            frameGrabber.setFrameNumber(ii);
+            frame = frameGrabber.grab();
+            BufferedImage b = converter.convert(frame);
+            if (b != null)
+                frameBufferQueue.add(b);
         }
+        frameGrabber.stop();
     }
 
     /**
