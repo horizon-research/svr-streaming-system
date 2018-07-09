@@ -18,17 +18,17 @@ index = 1
 q = queue.Queue()
 
 for i in np.arange(0.0, args.total, step):
-	start = time.strftime('%H:%M:%S', time.gmtime(i))
-	end = time.strftime('%H:%M:%S', time.gmtime(i+step))
-	if bias:
-		start = str(start) + step_str
-		bias = False
-	else:
-		end = str(end) + step_str
-		bias = True
-	out = args.output + '_' + str(index) + '.mp4'
-	index = index+1
-	q.put(subprocess.Popen(['ffmpeg', '-i', args.video, '-ss', start, '-to', end, '-async', '1', out]))
-	# wait
-	if (q.qsize() > 4):
-		q.get().wait()
+    start = time.strftime('%H:%M:%S', time.gmtime(i))
+    end = time.strftime('%H:%M:%S', time.gmtime(i+step))
+    if bias:
+        start = str(start) + step_str
+        bias = False
+    else:
+        end = str(end) + step_str
+        bias = True
+    out = args.output + '_' + str(index) + '.mp4'
+    index = index+1
+    q.put(subprocess.Popen(['ffmpeg', '-i', args.video, '-ss', start, '-to', end, '-async', '1', out]))
+    # wait
+    if q.qsize() > 4:
+        q.get().wait()

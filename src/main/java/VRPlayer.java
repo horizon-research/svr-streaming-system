@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class VRPlayer {
     Manifest manifest;
     private static final int TOTAL_SEG_FRAME = 10;
-    private static final int USER_REQUEST_FREQUENCY = 30;
+    private static final int GUI_RENDER_FREQUENCY = 30;
     public static final int VRPLAYER_WIDTH = 1200;
     public static final int VRPLAYER_HEIGHT = 1200;
 
@@ -78,7 +78,7 @@ public class VRPlayer {
         vrPlayerFrame.setSize(new Dimension(VRPLAYER_WIDTH, VRPLAYER_HEIGHT));
         vrPlayerFrame.setVisible(true);
 
-        imageRenderingTimer = new Timer(15, new guiTimerListener());
+        imageRenderingTimer = new Timer(GUI_RENDER_FREQUENCY, new guiTimerListener());
         imageRenderingTimer.setInitialDelay(0);
         imageRenderingTimer.setCoalesce(true);
 
@@ -101,6 +101,7 @@ public class VRPlayer {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        System.out.println("[STEP 0-2] Receive manifest from VRServer");
 
         // Create network handler thread
         NetworkHandler networkHandler = new NetworkHandler();
@@ -140,16 +141,16 @@ public class VRPlayer {
                 int keyFrameID = (currFovSegTop - 1) * TOTAL_SEG_FRAME;
                 TCPSerializeSender metadataRequest = new TCPSerializeSender<FOVMetadata>(host, port, fovTraces.get(keyFrameID));
                 metadataRequest.request();
-                System.out.println("[[SEGMENT #" + currFovSegTop + "]] send metadata to server");
+                System.out.println("[STEP 1] SEGMENT #" + currFovSegTop + " send metadata to server");
 
                 // 2. get response from VRServer which indicate "FULL" or "FOV"
                 TCPSerializeReceiver msgReceiver = new TCPSerializeReceiver<Integer>(host, port);
                 msgReceiver.request();
                 int predPathMsg = (Integer) msgReceiver.getSerializeObj();
-                System.out.println("[DEBUG] get size message: " + FOVProtocol.print(predPathMsg));
+                System.out.println("[STEP 4] get size message: " + FOVProtocol.print(predPathMsg));
 
                 // 3. download video segment from VRServer
-                System.out.println("[DEBUG] download video segment");
+                System.out.println("[STEP 6] download video segment from VRServer");
                 VideoSegmentDownloader videoSegmentDownloader =
                         new VideoSegmentDownloader(host, port, segmentPath, segFilename, currFovSegTop,
                                 (int) manifest.getVideoSegmentLength(currFovSegTop));
@@ -169,14 +170,9 @@ public class VRPlayer {
                     int secondDownloadMsg = FOVProtocol.GOOD;
                     int totalDecodedFrame = 0;
                     // TODO fov file name should be corrected after storage has been prepared
-<<<<<<< Updated upstream
-                    String filename = getSegFilenameFromId(currFovSegTop);
-                    File file = new File(getSegFilenameFromId(currFovSegTop));
-                    FrameGrab grab = null;
-=======
                     String videoFilename = getSegFilenameFromId(currFovSegTop);
                     File file = new File(videoFilename);
->>>>>>> Stashed changes
+
                     // decode fov until fovTrace not match
                      try {
                         Java2DFrameConverter converter = new Java2DFrameConverter();
@@ -190,10 +186,10 @@ public class VRPlayer {
                             FOVMetadata userFov = fovTraces.get(keyFrameID);
                             double coverRatio = pathMetadata.getOverlapRate(userFov);
                             if (coverRatio < FOVProtocol.THRESHOLD) {
-                                System.out.println("fail at keyFrameID: " + keyFrameID);
-                                System.out.println("user fov: " + userFov);
-                                System.out.println("path metadata: " + pathMetadata);
-                                System.out.println("overlap ratio: " + coverRatio);
+                                System.out.println("[DEBUG] fail at keyFrameID: " + keyFrameID);
+                                System.out.println("[DEBUG] user fov: " + userFov);
+                                System.out.println("[DEBUG] path metadata: " + pathMetadata);
+                                System.out.println("[DEBUG] overlap ratio: " + coverRatio);
                                 secondDownloadMsg = FOVProtocol.BAD;
                                 break;
                             } else {
@@ -214,14 +210,14 @@ public class VRPlayer {
                     // send back GOOD for all-hit BAD for any fov-miss
                     TCPSerializeSender finRequest = new TCPSerializeSender<Integer>(host, port, secondDownloadMsg);
                     finRequest.request();
-                    System.out.println("[DEBUG] send back " + FOVProtocol.print(secondDownloadMsg));
+                    System.out.println("[STEP 7] send back " + FOVProtocol.print(secondDownloadMsg));
 
                     // receive full size video segment if send back BAD
                     if (secondDownloadMsg == FOVProtocol.BAD) {
                         videoSegmentDownloader =
                                 new VideoSegmentDownloader(host, port, segmentPath, "workaround", currFovSegTop,
                                         (int) manifest.getVideoSegmentLength(currFovSegTop));
-                        System.out.println("[DEBUG] request for full size video segment as compensation");
+                        System.out.println("[STEP 10] Download full size video segment from VRServer");
                         try {
                             videoSegmentDownloader.request();
                         } catch (IOException e) {
@@ -230,17 +226,13 @@ public class VRPlayer {
 
                         // TODO the file name of full size video segment is the same as fov video segment for now
                         System.out.println("[DEBUG] Start decode from frame: " + totalDecodedFrame);
-<<<<<<< Updated upstream
-                        filename = getSegFilenameFromId(currFovSegTop);
-                        decodeSegment(filename, totalDecodedFrame+1);
-=======
                         videoFilename = getSegFilenameFromId(currFovSegTop);
                         try {
                             decodeVideoSegment(videoFilename, totalDecodedFrame+1);
                         } catch (FrameGrabber.Exception e) {
                             e.printStackTrace();
                         }
->>>>>>> Stashed changes
+
                     }
                 } else if (FOVProtocol.isFull(predPathMsg)) {
                     // TODO the file name of full size video segment is the same as fov video segment for now
@@ -271,7 +263,7 @@ public class VRPlayer {
                 if (bufferedImage != null) {
                     icon = new ImageIcon(bufferedImage);
                     iconLabel.setIcon(icon);
-//                    System.out.println("[RENDER] Render icon, picture size: " + frameQueue.size());
+//                    System.out.println("[RENDER] Render icon, picture size: " + frameBufferQueue.size());
                 }
             }
         }
@@ -296,7 +288,8 @@ public class VRPlayer {
         FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(path);
         frameGrabber.start();
         Frame frame;
-        double frameRate = frameGrabber.getFrameRate(); // TODO
+        // double frameRate = frameGrabber.getFrameRate(); // TODO
+        // System.out.println("framerate: " + frameRate);
         for (int ii = from; ii < frameGrabber.getLengthInVideoFrames(); ii++) {
             frameGrabber.setFrameNumber(ii);
             frame = frameGrabber.grab();
@@ -313,10 +306,10 @@ public class VRPlayer {
      * @param args command line args.
      */
     public static void main(String[] args) {
-        VRPlayer vrPlayer = new VRPlayer("localhost",
-                1988,
-                "tmp",
-                "segment",
-                "user-fov-trace.txt");
+        VRPlayer vrPlayer = new VRPlayer(args[0],
+                Integer.parseInt(args[1]),
+                args[2],
+                args[3],
+                args[4]);
     }
 }

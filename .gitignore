@@ -59,3 +59,7 @@ manifest*
 storage/rhino/*.mp4
 .keep
 docs/
+out/
+storage/full-frames/
+storage/rhino/
+target/maven*
