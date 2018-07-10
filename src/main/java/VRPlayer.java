@@ -38,7 +38,8 @@ public class VRPlayer {
     private int currFovSegTop;      // indicate the top video segment id could be decoded
     private Manifest manifest;
     private FOVTraces fovTraces;    // use currFovSegTop to extract fov from fovTraces
-    private ConcurrentLinkedQueue<BufferedImage> frameBufferQueue = new ConcurrentLinkedQueue<BufferedImage>();
+    private ConcurrentLinkedQueue<BufferedImage> frameBufferQueue = new ConcurrentLinkedQueue<>();
+    private NetworkHandler networkHandler;
 
     /**
      * Construct a VRPlayer object which manage GUI, video segment downloading, and video segment decoding
@@ -50,7 +51,7 @@ public class VRPlayer {
      * @param trace       path of a user field-of-view trace file.
      */
     public VRPlayer(String host, int port, String segmentPath,
-                    String segFilename, String trace) {
+                    String segFilename, String trace, Utilities.Mode mode) {
         // init vars
         this.host = host;
         this.port = port;
@@ -64,8 +65,17 @@ public class VRPlayer {
         downloadAndParseManifest();
         System.out.println("[STEP 0-2] Receive manifest from VRServer");
 
-        // Create network handler thread
-        NetworkHandler networkHandler = new NetworkHandler();
+        switch (mode) {
+            case BASELINE:
+                networkHandler = new BaselineNetworkHandler();
+                break;
+            case SVR:
+                networkHandler = new SVRNetworkHandler();
+                break;
+            default:
+                System.err.println("Should specify mode SVR or BASELINE");
+                System.exit(1);
+        }
         Thread networkThd = new Thread(networkHandler);
 
         // Start main thread gui timer and network handler thread
@@ -146,17 +156,26 @@ public class VRPlayer {
         }
     }
 
+    private abstract class NetworkHandler implements Runnable { }
+
+    private class BaselineNetworkHandler extends NetworkHandler {
+        @Override
+        public void run() {
+
+        }
+    }
+
     /**
-     * Download video segments or sending fov metadata in a separate thread.
+     * Download video segments following svr fov protocol.
      */
-    private class NetworkHandler implements Runnable {
-        // Request video segment every tick-tock
+    private class SVRNetworkHandler extends NetworkHandler {
+        @Override
         public void run() {
             while (currFovSegTop <= manifest.getVideoSegmentAmount()) {
                 // 1. request fov with the key frame metadata from VRServer
                 // TODO suppose one video segment have 10 frames temporarily, check out storage/segment.py
                 int keyFrameID = (currFovSegTop - 1) * TOTAL_SEG_FRAME;
-                TCPSerializeSender metadataRequest = new TCPSerializeSender<FOVMetadata>(host, port, fovTraces.get(keyFrameID));
+                TCPSerializeSender metadataRequest = new TCPSerializeSender<>(host, port, fovTraces.get(keyFrameID));
                 metadataRequest.request();
                 System.out.println("[STEP 1] SEGMENT #" + currFovSegTop + " send metadata to server");
 
@@ -187,7 +206,7 @@ public class VRPlayer {
                         Java2DFrameConverter converter = new Java2DFrameConverter();
                         FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(videoFilename);
                         frameGrabber.start();
-                        Frame frame = null;
+                        Frame frame;
                         for (int ii = 0; ii < frameGrabber.getLengthInVideoFrames(); ii++) {
                             FOVMetadata userFov = fovTraces.get(keyFrameID);
                             double coverRatio = pathMetadata.getOverlapRate(userFov);
@@ -214,7 +233,7 @@ public class VRPlayer {
                     }
 
                     // send back GOOD for all-hit BAD for any fov-miss
-                    TCPSerializeSender finRequest = new TCPSerializeSender<Integer>(host, port, secondDownloadMsg);
+                    TCPSerializeSender finRequest = new TCPSerializeSender<>(host, port, secondDownloadMsg);
                     finRequest.request();
                     System.out.println("[STEP 7] send back " + FOVProtocol.print(secondDownloadMsg));
 
@@ -259,10 +278,6 @@ public class VRPlayer {
         }
     }
 
-    private interface NoArgOperator {
-        public int op();
-    }
-
     /**
      * Decode all the frames in the specified video segment using JavaCV
      *
@@ -304,6 +319,7 @@ public class VRPlayer {
                 Integer.parseInt(args[1]),
                 args[2],
                 args[3],
-                args[4]);
+                args[4],
+                Utilities.Mode.SVR);
     }
 }

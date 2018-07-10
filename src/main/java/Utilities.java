@@ -40,4 +40,8 @@ public class Utilities {
         String numstr = segName.substring(pos1 + 1, pos2);
         return Integer.parseInt(numstr);
     }
+
+    public enum Mode {
+        BASELINE, SVR
+    }
 }

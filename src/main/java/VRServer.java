@@ -16,6 +16,7 @@ public class VRServer implements Runnable {
     private boolean hasSentManifest;
     private Manifest manifest;
     private static final String manifestFileName = "manifest-server.txt";
+    private Utilities.Mode mode;
 
     /**
      * Setup a VRServer object that waiting for connections from VRPlayer.
@@ -23,13 +24,15 @@ public class VRServer implements Runnable {
      * @param port            port of the VRServer.
      * @param videoSegmentDir path to the storage of video segments.
      * @param storageFilename name of video segments.
-     * @param predFilename
+     * @param predFilename    path of the object detection file.
+     * @param mode            svr or baseline.
      */
-    public VRServer(int port, String videoSegmentDir, String storageFilename, String predFilename) {
+    public VRServer(int port, String videoSegmentDir, String storageFilename, String predFilename, Utilities.Mode mode) {
         // init
         this.videoSegmentDir = videoSegmentDir;
         this.storageFilename = storageFilename;
         this.predFilename = predFilename;
+        this.mode = mode;
 
         // setup a tcp server socket that waiting for sending files
         try {
@@ -63,6 +66,16 @@ public class VRServer implements Runnable {
      * Accept the connection from VRPlayer and then send the manifest file or video segments.
      */
     public void run() {
+        switch (mode) {
+            case BASELINE:
+                break;
+            case SVR:
+                runSVRProtocol();
+                break;
+        }
+    }
+
+    void runSVRProtocol() {
         while (true) {
             Socket clientSock;
             if (this.hasSentManifest) {
@@ -158,7 +171,8 @@ public class VRServer implements Runnable {
         VRServer vrServer = new VRServer(Integer.parseInt(args[0]),
                 args[1],
                 args[2],
-                args[3]);
+                args[3],
+                Utilities.Mode.SVR);
         vrServer.run();
     }
 }
