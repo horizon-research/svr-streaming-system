@@ -20,25 +20,25 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * of fov-logic.
  */
 public class VRPlayer {
-    Manifest manifest;
     private static final int TOTAL_SEG_FRAME = 10;
     private static final int GUI_RENDER_FREQUENCY = 30;
-    public static final int VRPLAYER_WIDTH = 1200;
-    public static final int VRPLAYER_HEIGHT = 1200;
+    private static final int VRPLAYER_WIDTH = 1200;
+    private static final int VRPLAYER_HEIGHT = 1200;
+    private static final int SEGMENT_START_NUM = 1;
+    private static final String CLIENT_MANIFEST = "manifest-client.txt";
 
     private String host;
     private int port;
     private String segmentPath;
     private String segFilename;
-    private String traceFile;
     private JFrame vrPlayerFrame = new JFrame("VRPlayer");
     private JPanel mainPanel = new JPanel();
     private JLabel iconLabel = new JLabel();
-    private ImageIcon icon;
     private Timer imageRenderingTimer;
-    private int currFovSegTop;     // indicate the top video segment id could be decoded
+    private int currFovSegTop;      // indicate the top video segment id could be decoded
+    private Manifest manifest;
     private FOVTraces fovTraces;    // use currFovSegTop to extract fov from fovTraces
-    private ConcurrentLinkedQueue<BufferedImage> frameBufferQueue;
+    private ConcurrentLinkedQueue<BufferedImage> frameBufferQueue = new ConcurrentLinkedQueue<BufferedImage>();
 
     /**
      * Construct a VRPlayer object which manage GUI, video segment downloading, and video segment decoding
@@ -51,13 +51,36 @@ public class VRPlayer {
      */
     public VRPlayer(String host, int port, String segmentPath,
                     String segFilename, String trace) {
+        // init vars
         this.host = host;
         this.port = port;
         this.segmentPath = segmentPath;
         this.segFilename = segFilename;
-        this.traceFile = trace;
-        this.frameBufferQueue = new ConcurrentLinkedQueue<BufferedImage>();
+        this.currFovSegTop = SEGMENT_START_NUM;
+        this.fovTraces = new FOVTraces(trace);
 
+        setupGUI();
+
+        downloadAndParseManifest();
+        System.out.println("[STEP 0-2] Receive manifest from VRServer");
+
+        // Create network handler thread
+        NetworkHandler networkHandler = new NetworkHandler();
+        Thread networkThd = new Thread(networkHandler);
+
+        // Start main thread gui timer and network handler thread
+        imageRenderingTimer.start();
+        networkThd.start();
+
+        // Wait for all the worker thread to finish
+        try {
+            networkThd.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setupGUI() {
         // setup frame
         this.vrPlayerFrame.addWindowListener(new WindowAdapter() {
             @Override
@@ -81,14 +104,13 @@ public class VRPlayer {
         imageRenderingTimer = new Timer(GUI_RENDER_FREQUENCY, new guiTimerListener());
         imageRenderingTimer.setInitialDelay(0);
         imageRenderingTimer.setCoalesce(true);
+    }
 
-        currFovSegTop = 1;
-
-        // Setup user fov trace object
-        fovTraces = new FOVTraces(traceFile);
-
-        // Download manifest file and feed it into manifest object
-        ManifestDownloader manifestDownloader = new ManifestDownloader(host, port, "manifest-client.txt");
+    /**
+     * Download manifest file and feed it into manifest object
+     */
+    private void downloadAndParseManifest() {
+        ManifestDownloader manifestDownloader = new ManifestDownloader(host, port, CLIENT_MANIFEST);
         try {
             manifestDownloader.request();
         } catch (IOException e) {
@@ -96,25 +118,9 @@ public class VRPlayer {
         }
         Gson gson = new Gson();
         try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader("manifest-client.txt"));
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(CLIENT_MANIFEST));
             manifest = gson.fromJson(bufferedReader, Manifest.class);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        System.out.println("[STEP 0-2] Receive manifest from VRServer");
-
-        // Create network handler thread
-        NetworkHandler networkHandler = new NetworkHandler();
-        Thread networkThd = new Thread(networkHandler);
-
-        // Start main thread gui timer, video decode thread and network handler thread
-        imageRenderingTimer.start();
-        networkThd.start();
-
-        // Wait for all the worker thread to finish
-        try {
-            networkThd.join();
-        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -125,8 +131,19 @@ public class VRPlayer {
      * @param id identifier of the video segment.
      * @return name of video segment.
      */
-    public String getSegFilenameFromId(int id) {
+    private String getSegFilenameFromId(int id) {
         return Utilities.getSegmentName(segmentPath, segFilename, id);
+    }
+
+    private void downloadVideoSegment() {
+        VideoSegmentDownloader videoSegmentDownloader =
+                new VideoSegmentDownloader(host, port, segmentPath, segFilename, currFovSegTop,
+                        (int) manifest.getVideoSegmentLength(currFovSegTop));
+        try {
+            videoSegmentDownloader.request();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -151,14 +168,7 @@ public class VRPlayer {
 
                 // 3. download video segment from VRServer
                 System.out.println("[STEP 6] download video segment from VRServer");
-                VideoSegmentDownloader videoSegmentDownloader =
-                        new VideoSegmentDownloader(host, port, segmentPath, segFilename, currFovSegTop,
-                                (int) manifest.getVideoSegmentLength(currFovSegTop));
-                try {
-                    videoSegmentDownloader.request();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                downloadVideoSegment();
 
                 // 3-1. check whether the other video frames (exclude key frame) does not match fov
                 // 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
@@ -171,17 +181,13 @@ public class VRPlayer {
                     int totalDecodedFrame = 0;
                     // TODO fov file name should be corrected after storage has been prepared
                     String videoFilename = getSegFilenameFromId(currFovSegTop);
-                    File file = new File(videoFilename);
 
                     // decode fov until fovTrace not match
-                     try {
+                    try {
                         Java2DFrameConverter converter = new Java2DFrameConverter();
                         FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(videoFilename);
                         frameGrabber.start();
-
-                        Frame frame;
-                        // TODO set frame rate base on server info
-                        // double frameRate = frameGrabber.getFrameRate();
+                        Frame frame = null;
                         for (int ii = 0; ii < frameGrabber.getLengthInVideoFrames(); ii++) {
                             FOVMetadata userFov = fovTraces.get(keyFrameID);
                             double coverRatio = pathMetadata.getOverlapRate(userFov);
@@ -214,34 +220,18 @@ public class VRPlayer {
 
                     // receive full size video segment if send back BAD
                     if (secondDownloadMsg == FOVProtocol.BAD) {
-                        videoSegmentDownloader =
-                                new VideoSegmentDownloader(host, port, segmentPath, "workaround", currFovSegTop,
-                                        (int) manifest.getVideoSegmentLength(currFovSegTop));
                         System.out.println("[STEP 10] Download full size video segment from VRServer");
-                        try {
-                            videoSegmentDownloader.request();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        downloadVideoSegment();
 
                         // TODO the file name of full size video segment is the same as fov video segment for now
                         System.out.println("[DEBUG] Start decode from frame: " + totalDecodedFrame);
                         videoFilename = getSegFilenameFromId(currFovSegTop);
-                        try {
-                            decodeVideoSegment(videoFilename, totalDecodedFrame+1);
-                        } catch (FrameGrabber.Exception e) {
-                            e.printStackTrace();
-                        }
-
+                        decodeVideoSegment(videoFilename, totalDecodedFrame);
                     }
                 } else if (FOVProtocol.isFull(predPathMsg)) {
                     // TODO the file name of full size video segment is the same as fov video segment for now
                     String filename = getSegFilenameFromId(currFovSegTop);
-                    try {
-                        decodeVideoSegment(filename);
-                    } catch (FrameGrabber.Exception e) {
-                        e.printStackTrace();
-                    }
+                    decodeVideoSegment(filename);
                 } else {
                     // should never go here
                     assert (false);
@@ -261,7 +251,7 @@ public class VRPlayer {
             if (!frameBufferQueue.isEmpty()) {
                 BufferedImage bufferedImage = frameBufferQueue.poll();
                 if (bufferedImage != null) {
-                    icon = new ImageIcon(bufferedImage);
+                    ImageIcon icon = new ImageIcon(bufferedImage);
                     iconLabel.setIcon(icon);
 //                    System.out.println("[RENDER] Render icon, picture size: " + frameBufferQueue.size());
                 }
@@ -269,13 +259,8 @@ public class VRPlayer {
         }
     }
 
-    /**
-     * Decode all the frames in the specified video segment using JavaCV
-     *
-     * @param path the path to the full-sized video segment
-     */
-    private void decodeVideoSegment(String path) throws FrameGrabber.Exception {
-        decodeVideoSegment(path, 0);
+    private interface NoArgOperator {
+        public int op();
     }
 
     /**
@@ -283,21 +268,30 @@ public class VRPlayer {
      *
      * @param path the path to the full-sized video segment
      */
-    private void decodeVideoSegment(String path, int from) throws FrameGrabber.Exception {
+    private void decodeVideoSegment(String path) {
+        decodeVideoSegment(path, 0);
+    }
+
+    private void decodeVideoSegment(String path, int from) {
         Java2DFrameConverter converter = new Java2DFrameConverter();
         FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(path);
-        frameGrabber.start();
-        Frame frame;
-        // double frameRate = frameGrabber.getFrameRate(); // TODO
-        // System.out.println("framerate: " + frameRate);
-        for (int ii = from; ii < frameGrabber.getLengthInVideoFrames(); ii++) {
-            frameGrabber.setFrameNumber(ii);
-            frame = frameGrabber.grab();
-            BufferedImage b = converter.convert(frame);
-            if (b != null)
-                frameBufferQueue.add(b);
+
+        try {
+            frameGrabber.start();
+            Frame frame;
+            // double frameRate = frameGrabber.getFrameRate(); // TODO
+            // System.out.println("framerate: " + frameRate);
+            for (int i = from; i < frameGrabber.getLengthInVideoFrames(); i++) {
+                frameGrabber.setFrameNumber(i);
+                frame = frameGrabber.grab();
+                BufferedImage b = converter.convert(frame);
+                if (b != null)
+                    frameBufferQueue.add(b);
+            }
+            frameGrabber.stop();
+        } catch (FrameGrabber.Exception e) {
+            e.printStackTrace();
         }
-        frameGrabber.stop();
     }
 
     /**
