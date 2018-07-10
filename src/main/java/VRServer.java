@@ -68,6 +68,7 @@ public class VRServer implements Runnable {
     public void run() {
         switch (mode) {
             case BASELINE:
+                runBaselineMode();
                 break;
             case SVR:
                 runSVRProtocol();
@@ -75,7 +76,24 @@ public class VRServer implements Runnable {
         }
     }
 
-    void runSVRProtocol() {
+    private void runBaselineMode() {
+        Socket clientSock;
+        try {
+            String filename = "storage/rhino.mp4";
+            File file = new File(filename);
+            System.out.println(filename + " size: " + file.length());
+
+            TCPSerializeSender<Long> sizeMsgRequest = new TCPSerializeSender<>(this.ss, file.length());
+            sizeMsgRequest.request();
+
+            clientSock = ss.accept();
+            sendFile(clientSock, filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void runSVRProtocol() {
         while (true) {
             Socket clientSock;
             if (this.hasSentManifest) {
@@ -172,7 +190,7 @@ public class VRServer implements Runnable {
                 args[1],
                 args[2],
                 args[3],
-                Utilities.Mode.SVR);
+                Utilities.Mode.BASELINE);
         vrServer.run();
     }
 }

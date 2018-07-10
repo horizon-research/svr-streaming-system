@@ -1,5 +1,3 @@
-import java.io.IOException;
-
 /**
  * For VRPlayer to download video segments.
  */

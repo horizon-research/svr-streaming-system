@@ -62,15 +62,14 @@ public class VRPlayer {
 
         setupGUI();
 
-        downloadAndParseManifest();
-        System.out.println("[STEP 0-2] Receive manifest from VRServer");
-
         switch (mode) {
             case BASELINE:
                 networkHandler = new BaselineNetworkHandler();
                 break;
             case SVR:
                 networkHandler = new SVRNetworkHandler();
+                downloadAndParseManifest();
+                System.out.println("[STEP 0-2] Receive manifest from VRServer");
                 break;
             default:
                 System.err.println("Should specify mode SVR or BASELINE");
@@ -156,12 +155,28 @@ public class VRPlayer {
         }
     }
 
-    private abstract class NetworkHandler implements Runnable { }
+    private void downloadVideoSegment(int length) {
+        VideoSegmentDownloader videoSegmentDownloader =
+                new VideoSegmentDownloader(host, port, segmentPath, segFilename, currFovSegTop, length);
+        try {
+            videoSegmentDownloader.request();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private abstract class NetworkHandler implements Runnable {}
 
     private class BaselineNetworkHandler extends NetworkHandler {
         @Override
         public void run() {
+            TCPSerializeReceiver<Long> sizeMsgRecv = new TCPSerializeReceiver<>(host, port);
+            sizeMsgRecv.request();
+            long size = sizeMsgRecv.getSerializeObj();
 
+            downloadVideoSegment((int) size);
+            String videoFilename = getSegFilenameFromId(currFovSegTop);
+            decodeVideoSegment(videoFilename);
         }
     }
 
@@ -320,6 +335,6 @@ public class VRPlayer {
                 args[2],
                 args[3],
                 args[4],
-                Utilities.Mode.SVR);
+                Utilities.Mode.BASELINE);
     }
 }
