@@ -190,7 +190,7 @@ public class VRServer implements Runnable {
                 args[1],
                 args[2],
                 args[3],
-                Utilities.Mode.BASELINE);
+                Utilities.Mode.SVR);
         vrServer.run();
     }
 }

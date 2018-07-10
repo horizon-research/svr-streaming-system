@@ -31,7 +31,13 @@ Run VRServer first and then launch VRPlayer. If there is any error, it might due
 the path of storage and the video segment name in the main function.
 
 ## Compilation
-- use intellij for now since it deal with maven for deps for me
+- VRServer
+    - intellij
+- VRPlayer
+    - maven
+        - mvn clean compile assembly:single
+        - cd target/
+        - java -jar vros-client-server-1.0-SNAPSHOT-jar-with-dependencies.jar localhost 1988 tmp segment user-fov-trace.txt
 
 ## Implementation
 - VRServer
