@@ -62,4 +62,4 @@ docs/
 out/
 storage/full-frames/
 storage/rhino/
-target/maven*
+target/

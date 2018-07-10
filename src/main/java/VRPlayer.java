@@ -301,7 +301,7 @@ public class VRPlayer {
     }
 
     /**
-     * Execute the VRplayer.
+     * Example: java VRPlayer localhost 1988 tmp segment user-fov-trace.txt
      *
      * @param args command line args.
      */

@@ -4,9 +4,12 @@ and bandwidth usage on client-side.
 
 ## TODO
 - [X] basic streaming system support using a manifest file to request for video segment
-- [ ] fov logic
-    - [ ] VRPlayer read a user fov file and then request video segment with the coordination
-    - [ ] VRServer response to VRPlayer with fov or a full frame segment
+- [X] fov logic
+    - [X] VRPlayer read a user fov file and then request video segment with the coordination
+    - [X] VRServer response to VRPlayer with fov or a full frame segment
+- [ ] Write script for creating video segments
+    - [ ] Full size video segment
+    - [ ] FOV video segment
 - [ ] efficient gui 
     - [ ] read [this](https://pavelfatin.com/low-latency-painting-in-awt-and-swing/)
 - [ ] native/optimized decoder

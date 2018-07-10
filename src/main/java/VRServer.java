@@ -149,8 +149,8 @@ public class VRServer implements Runnable {
     }
 
     /**
-     * Usage java VRServer {dir} {storageFilename}
-     * The file name in the dir will be constructed as {storageFilename}_number.mp4.
+     * Example: java VRServer 1988 storage/rhino output storage/rhinos-pred.txt
+     * The file name in the storage/rhino should be constructed as {storageFilename}_number.mp4.
      *
      * @param args command line args.
      */
