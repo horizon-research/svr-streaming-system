@@ -31,14 +31,20 @@ Run VRServer first and then launch VRPlayer. If there is any error, it might due
 the path of storage and the video segment name in the main function.
 
 ## Compilation
+- this repository now has only been tested on ubuntu 16.04
+- install openjdk version > 1.8
+- install maven
+    - sudo apt-get install mvn
+    - if mvn doesn't work, replace it with maven
+- mvn package
+- prepare resources
+    - see the Prepare Video Segment part
+    - cp -r storage/ target/
 - VRServer
-    - intellij
+    - `java -jar vrserver.jar 1988 storage/rhino output storage/rhinos-pred.txt`
 - VRPlayer
-    - maven
-        - mvn clean compile assembly:single
-        - cd target/
-        - java -jar vros-client-server-1.0-SNAPSHOT-jar-with-dependencies.jar localhost 1988 tmp segment user-fov-trace.txt
-
+    - `java -jar vrplayer.jar localhost 1988 tmp segment user-fov-trace.txt`
+    
 ## Implementation
 - VRServer
     - Create manifest file using:

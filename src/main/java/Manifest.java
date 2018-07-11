@@ -44,7 +44,7 @@ public class Manifest implements Serializable {
                 FileReader fileReader = new FileReader(predFile);
                 BufferedReader bufferedReader = new BufferedReader(fileReader);
                 String line;
-                Vector<FOVMetadata> fovMetadataVec = new Vector<FOVMetadata>();
+                Vector<FOVMetadata> fovMetadataVec = new Vector<>();
                 int last_id = 1;
                 while ((line = bufferedReader.readLine()) != null) {
                     String[] columns = line.split("\\s");
@@ -56,21 +56,19 @@ public class Manifest implements Serializable {
                             last_id = id;
                         } else  {
                             fovMetadata2DVec.add(fovMetadataVec);
-                            fovMetadataVec = new Vector<FOVMetadata>();
+                            fovMetadataVec = new Vector<>();
                         }
                     }
                     fovMetadataVec.add(new FOVMetadata(line, FOVProtocol.FOV_SIZE_WIDTH, FOVProtocol.FOV_SIZE_HEIGHT));
                 }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
             }
         }
 
         // get video segment size and feed into
         File storageDirectory = new File(storagePath);
-        predMetaDataVec = new Vector<VideoSegmentMetaData>();
+        predMetaDataVec = new Vector<>();
         this.length = 0;
 
         // padding
@@ -79,12 +77,10 @@ public class Manifest implements Serializable {
         if (storageDirectory.exists() && storageDirectory.isDirectory()) {
             File[] dirList = storageDirectory.listFiles();
             assert dirList != null;
-            Arrays.sort(dirList, new Comparator<File>() {
-                public int compare(File f1, File f2) {
-                    String f1name = f1.getName();
-                    String f2name = f2.getName();
-                    return Utilities.getIdFromSegmentName(f1name) - Utilities.getIdFromSegmentName(f2name);
-                }
+            Arrays.sort(dirList, (f1, f2) -> {
+                String f1name = f1.getName();
+                String f2name = f2.getName();
+                return Utilities.getIdFromSegmentName(f1name) - Utilities.getIdFromSegmentName(f2name);
             });
             for (File f : dirList) {
                 int size = predMetaDataVec.size();
