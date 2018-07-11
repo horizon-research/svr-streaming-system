@@ -42,6 +42,21 @@ public class Utilities {
     }
 
     public enum Mode {
-        BASELINE, SVR
+        BASELINE, SVR, NONE;
+    }
+
+    /**
+     * Convert from string to mode
+     * @param str string could only be BASELINE or SVR.
+     * @return mode.
+     */
+    public static Mode string2mode(String str) {
+        if (str.equals("SVR")) {
+            return Mode.SVR;
+        } else if (str.equals("BASELINE")) {
+            return Mode.BASELINE;
+        } else {
+            return Mode.NONE;
+        }
     }
 }

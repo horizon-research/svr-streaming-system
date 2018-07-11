@@ -41,9 +41,9 @@ the path of storage and the video segment name in the main function.
     - see the Prepare Video Segment part
     - cp -r storage/ target/
 - VRServer
-    - `java -jar vrserver.jar 1988 storage/rhino output storage/rhinos-pred.txt`
+    - `java -jar vrserver.jar 1988 storage/rhino output storage/rhinos-pred.txt SVR`
 - VRPlayer
-    - `java -jar vrplayer.jar localhost 1988 tmp segment user-fov-trace.txt`
+    - `java -jar vrplayer.jar localhost 1988 tmp segment user-fov-trace.txt SVR`
     
 ## Implementation
 - VRServer

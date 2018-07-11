@@ -335,6 +335,6 @@ public class VRPlayer {
                 args[2],
                 args[3],
                 args[4],
-                Utilities.Mode.SVR);
+                Utilities.string2mode(args[5]));
     }
 }
