@@ -60,6 +60,11 @@ public class VRPlayer {
         this.currFovSegTop = SEGMENT_START_NUM;
         this.fovTraces = new FOVTraces(trace);
 
+        File segmentDir = new File(segmentPath);
+        if (!segmentDir.exists()) {
+            segmentDir.mkdirs();
+        }
+
         setupGUI();
 
         switch (mode) {
