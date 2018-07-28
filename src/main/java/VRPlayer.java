@@ -11,6 +11,7 @@ public class VRPlayer {
     private static final int TOTAL_SEG_FRAME = 10;
     private static final int SEGMENT_START_NUM = 1;
     private static final String CLIENT_MANIFEST = "manifest-client.txt";
+    private static int FRAME_PER_VIDEO_SEGMENT = 20;
 
     private String host;
     private int port;
@@ -116,7 +117,6 @@ public class VRPlayer {
 
         downloadVideoSegment((int) size);
         String videoFilename = getSegFilenameFromId(currFovSegTop);
-        // TODO decodeVideoSegment(videoFilename);
         PlayNative play =
                 new PlayNative(videoFilename, 0, -1);
     }
@@ -154,8 +154,23 @@ public class VRPlayer {
                 int totalDecodedFrame = 0;
                 // TODO fov file name should be corrected after storage has been prepared
                 String videoFilename = getSegFilenameFromId(currFovSegTop);
-
                 // TODO decode fov until fovTrace not match
+                for (int i = 0; i < FRAME_PER_VIDEO_SEGMENT; i++) {
+                    FOVMetadata userFov = fovTraces.get(keyFrameID);
+                    double coverRatio = pathMetadata.getOverlapRate(userFov);
+                    if (coverRatio < FOVProtocol.THRESHOLD) {
+                        System.out.println("[DEBUG] fail at keyFrameID: " + keyFrameID);
+                        System.out.println("[DEBUG] user fov: " + userFov);
+                        System.out.println("[DEBUG] path metadata: " + pathMetadata);
+                        System.out.println("[DEBUG] overlap ratio: " + coverRatio);
+                        secondDownloadMsg = FOVProtocol.BAD;
+                        break;
+                    } else {
+                        keyFrameID++;
+                        totalDecodedFrame++;
+                    }
+                }
+                new PlayNative(videoFilename, 0, totalDecodedFrame - 1);
 
                 // send back GOOD for all-hit BAD for any fov-miss
                 TCPSerializeSender finRequest = new TCPSerializeSender<>(host, port, secondDownloadMsg);
@@ -171,11 +186,12 @@ public class VRPlayer {
                     System.out.println("[DEBUG] Start decode from frame: " + totalDecodedFrame);
                     videoFilename = getSegFilenameFromId(currFovSegTop);
                     // TODO decodeVideoSegment(videoFilename, totalDecodedFrame);
+                    new PlayNative(videoFilename, totalDecodedFrame, -1);
                 }
             } else if (FOVProtocol.isFull(predPathMsg)) {
                 // TODO the file name of full size video segment is the same as fov video segment for now
                 String filename = getSegFilenameFromId(currFovSegTop);
-                // TODO decodeVideoSegment(filename);
+                new PlayNative(filename, 0, -1);
             } else {
                 // should never go here
                 assert (false);
@@ -201,3 +217,4 @@ public class VRPlayer {
                 Utilities.string2mode(args[5]));
     }
 }
+
