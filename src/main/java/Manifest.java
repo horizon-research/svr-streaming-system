@@ -34,9 +34,43 @@ public class Manifest implements Serializable {
      * @param predFilePath    path to a object detection file of the video.
      */
     public Manifest(String storagePath, String predFilePath) {
-        // parse predict file
-        File predFile = new File(predFilePath);
-        Vector<Vector<FOVMetadata>> fovMetadata2DVec = new Vector<Vector<FOVMetadata>>();
+        Vector<Vector<FOVMetadata>> fovMetadata2DVec = parsePredFile(predFilePath);
+
+        // get video segment size and feed into
+        File storageDirectory = new File(storagePath);
+        predMetaDataVec = new Vector<>();
+        this.length = 0;
+
+        // padding
+        predMetaDataVec.add(new VideoSegmentMetaData(null, -1L));
+
+        // TODO now iterate whole file with the name rhino/output_xx.mp4, but we have rhino/1/3.mp4
+        // TODO manifest should have the file size of all of the video segment includi
+        if (storageDirectory.exists() && storageDirectory.isDirectory()) {
+            File[] dirList = storageDirectory.listFiles();
+            assert dirList != null;
+            Arrays.sort(dirList, (f1, f2) -> {
+                String f1name = f1.getName();
+                String f2name = f2.getName();
+                return Utilities.getIdFromFullSizeSegmentName(f1name) - Utilities.getIdFromFullSizeSegmentName(f2name);
+            });
+            for (File f : dirList) {
+                int size = predMetaDataVec.size();
+                predMetaDataVec.add(new VideoSegmentMetaData(fovMetadata2DVec.get(size), f.length()));
+            }
+        } else {
+            System.err.println(storagePath + " should be a directory!");
+            System.exit(1);
+        }
+
+        this.length = predMetaDataVec.size();
+    }
+
+    private Vector<Vector<FOVMetadata>> parsePredFile(String predFileName) {
+        File predFile = new File(predFileName);
+        Vector<Vector<FOVMetadata>> fovMetadata2DVec = new Vector<>();
+
+        // parse predict file into fovMetadata2DVec.
         fovMetadata2DVec.add(null);
         if (predFile.exists()) {
             try {
@@ -64,33 +98,7 @@ public class Manifest implements Serializable {
                 ioe.printStackTrace();
             }
         }
-
-        // get video segment size and feed into
-        File storageDirectory = new File(storagePath);
-        predMetaDataVec = new Vector<>();
-        this.length = 0;
-
-        // padding
-        predMetaDataVec.add(new VideoSegmentMetaData(null, -1L));
-
-        if (storageDirectory.exists() && storageDirectory.isDirectory()) {
-            File[] dirList = storageDirectory.listFiles();
-            assert dirList != null;
-            Arrays.sort(dirList, (f1, f2) -> {
-                String f1name = f1.getName();
-                String f2name = f2.getName();
-                return Utilities.getIdFromFullSizeSegmentName(f1name) - Utilities.getIdFromFullSizeSegmentName(f2name);
-            });
-            for (File f : dirList) {
-                int size = predMetaDataVec.size();
-                predMetaDataVec.add(new VideoSegmentMetaData(fovMetadata2DVec.get(size), f.length()));
-            }
-        } else {
-            System.err.println(storagePath + " should be a directory!");
-            System.exit(1);
-        }
-
-        this.length = predMetaDataVec.size();
+        return fovMetadata2DVec;
     }
 
     /**
@@ -103,8 +111,7 @@ public class Manifest implements Serializable {
     public void write(String path) throws FileNotFoundException, UnsupportedEncodingException {
         PrintWriter writer = new PrintWriter(path, "UTF-8");
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String manifestStr = gson.toJson(this);
-        writer.write(manifestStr);
+        writer.write(gson.toJson(this));
         writer.flush();
         writer.close();
     }

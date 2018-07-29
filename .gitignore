@@ -60,7 +60,6 @@ storage/rhino/*.mp4
 .keep
 docs/
 out/
-storage/full-frames/
-storage/rhino/
+storage/rhino*/
 target/
 render

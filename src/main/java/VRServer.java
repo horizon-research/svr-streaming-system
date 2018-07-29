@@ -7,15 +7,13 @@ import java.util.Vector;
  * This object is a server sending manifest file and video segments to VRPlayer.
  */
 public class VRServer implements Runnable {
-    private static final int BUF_SIZE = 4096;
-
     private ServerSocket ss;
     private String videoSegmentDir;
     private String storageFilename;
     private String predFilename;
     private boolean hasSentManifest;
     private Manifest manifest;
-    private static final String manifestFileName = "manifest-server.txt";
+    private static final String fullSizeManifestName = "full-manifest.txt";
     private Utilities.Mode mode;
 
     /**
@@ -75,7 +73,6 @@ public class VRServer implements Runnable {
 
     private void runSVRProtocol() {
         while (true) {
-            Socket clientSock;
             if (this.hasSentManifest) {
                 // send video segments
                 for (int segId = 1; segId <= manifest.getVideoSegmentAmount(); segId++) {
@@ -139,16 +136,16 @@ public class VRServer implements Runnable {
                 // create manifest file for VRServer to send to VRPlayer
                 manifest = new Manifest(videoSegmentDir, predFilename);
                 try {
-                    manifest.write(manifestFileName);
+                    manifest.write(fullSizeManifestName);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 // send the manifest file just created
                 System.out.println("[STEP 0-1] Send manifest file to VRPlayer");
-                System.out.println("Manifest file size: " + new File(manifestFileName).length());
+                System.out.println("Manifest file size: " + new File(fullSizeManifestName).length());
                 try {
-                    TCPFileSender tcpFileSender = new TCPFileSender(ss, manifestFileName);
+                    TCPFileSender tcpFileSender = new TCPFileSender(ss, fullSizeManifestName);
                     tcpFileSender.request();
                 } catch (IOException e) {
                     e.printStackTrace();

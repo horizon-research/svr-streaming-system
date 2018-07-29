@@ -10,7 +10,7 @@ import java.util.Vector;
 public class VRPlayer {
     private static final int TOTAL_SEG_FRAME = 10;
     private static final int SEGMENT_START_NUM = 1;
-    private static final String CLIENT_MANIFEST = "manifest-client.txt";
+    private static final String CLIENT_FULLSIZE_MANIFEST = "full.txt";
     private static int FRAME_PER_VIDEO_SEGMENT = 20;
 
     private String host;
@@ -64,7 +64,7 @@ public class VRPlayer {
      * Download manifest file and feed it into manifest object
      */
     private void downloadAndParseManifest() {
-        ManifestDownloader manifestDownloader = new ManifestDownloader(host, port, CLIENT_MANIFEST);
+        ManifestDownloader manifestDownloader = new ManifestDownloader(host, port, CLIENT_FULLSIZE_MANIFEST);
         try {
             manifestDownloader.request();
         } catch (IOException e) {
@@ -72,7 +72,7 @@ public class VRPlayer {
         }
         Gson gson = new Gson();
         try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(CLIENT_MANIFEST));
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(CLIENT_FULLSIZE_MANIFEST));
             manifest = gson.fromJson(bufferedReader, Manifest.class);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
