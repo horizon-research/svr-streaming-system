@@ -11,7 +11,7 @@ public class Utilities {
      * @param i    sequential id of video segment.
      * @return name of the video segment.
      */
-    public static String getFullSizeSegmentName(String dir, String name, int i) {
+    public static String getServerFullSizeSegmentName(String dir, String name, int i) {
         return dir + "/" + name + "_" + Integer.toString(i) + ".mp4";
     }
 
@@ -24,7 +24,7 @@ public class Utilities {
      * @param ext  file extension of the video segment.
      * @return name of the video segment.
      */
-    public static String getFullSizeSegmentName(String dir, String name, int i, String ext) {
+    public static String getServerFullSizeSegmentName(String dir, String name, int i, String ext) {
         return dir + "/" + name + "_" + Integer.toString(i) + "." + ext;
     }
 
@@ -49,8 +49,16 @@ public class Utilities {
      * @param pathid path id.
      * @return
      */
-    public static String getFOVSegmentName(String dir, int id, int pathid) {
+    public static String getServerFOVSegmentName(String dir, int id, int pathid) {
         return dir + "/" + Integer.toString(id) + "/" + Integer.toString(pathid) + ".mp4";
+    }
+
+    public static String getClientFullSegmentName(String dir, int id) {
+        return dir + "/" + Integer.toString(id) + ".mp4";
+    }
+
+    public static String getClientFOVSegmentName(String dir, int id, int pathid) {
+        return dir + "/" + Integer.toString(id) + "_" + Integer.toString(pathid) + ".mp4";
     }
 
     public enum Mode {

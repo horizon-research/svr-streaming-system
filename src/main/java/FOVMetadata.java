@@ -11,6 +11,7 @@ public class FOVMetadata implements Serializable {
     private int y;
     private int width;
     private int height;
+    private int fileLength;
 
     /**
      * Construct FOVMetadata object by parsing a string line.
@@ -27,6 +28,7 @@ public class FOVMetadata implements Serializable {
         this.y = Integer.parseInt(coord[1]);
         this.width = Integer.parseInt(coord[2]);
         this.height = Integer.parseInt(coord[3]);
+        this.fileLength = -1;
     }
 
     /**
@@ -64,10 +66,21 @@ public class FOVMetadata implements Serializable {
 
         this.width = width;
         this.height = height;
+        this.fileLength = -1;
+    }
+
+    /**
+     * Set fov file length for the fov object.
+     *
+     * @param len Length of a fov video segment.
+     */
+    public void setFileLength(int len) {
+        this.fileLength = len;
     }
 
     /**
      * Compute the overlap ratio of two viewport.
+     *
      * @param other the other fov metadata object.
      * @return overlap ratio.
      */
@@ -134,6 +147,10 @@ public class FOVMetadata implements Serializable {
             assert (false);
         }
         return ratio;
+    }
+
+    public int getFileLength() {
+        return this.fileLength;
     }
 
     @Override

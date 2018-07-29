@@ -1,33 +1,37 @@
 import java.io.*;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.Vector;
 
 /**
- * This object is a server sending manifest file and video segments to VRPlayer.
+ * This object is a server sending fullSizeManifest file and video segments to VRPlayer.
  */
 public class VRServer implements Runnable {
     private ServerSocket ss;
-    private String videoSegmentDir;
+    private String fullSegmentDir;
+    private String fovSegmentDir;
     private String storageFilename;
     private String predFilename;
     private boolean hasSentManifest;
-    private Manifest manifest;
-    private static final String fullSizeManifestName = "full-manifest.txt";
+    private VideoSegmentManifest fullSizeManifest;
+    private static final String fullSizeManifestName = "server-full.txt";
     private Utilities.Mode mode;
 
     /**
      * Setup a VRServer object that waiting for connections from VRPlayer.
      *
      * @param port            port of the VRServer.
-     * @param videoSegmentDir path to the storage of video segments.
+     * @param fullSegmentDir  path to the storage of full size video segments.
+     * @param fovSegmentDir   path to the storage of fov video segments.
      * @param storageFilename name of video segments.
      * @param predFilename    path of the object detection file.
      * @param mode            svr or baseline.
      */
-    public VRServer(int port, String videoSegmentDir, String storageFilename, String predFilename, Utilities.Mode mode) {
+    public VRServer(int port, String fullSegmentDir, String fovSegmentDir,
+                    String storageFilename, String predFilename,
+                    Utilities.Mode mode) {
         // init
-        this.videoSegmentDir = videoSegmentDir;
+        this.fullSegmentDir = fullSegmentDir;
+        this.fovSegmentDir = fovSegmentDir;
         this.storageFilename = storageFilename;
         this.predFilename = predFilename;
         this.mode = mode;
@@ -41,7 +45,7 @@ public class VRServer implements Runnable {
     }
 
     /**
-     * Accept the connection from VRPlayer and then send the manifest file or video segments.
+     * Accept the connection from VRPlayer and then send the fullSizeManifest file or video segments.
      */
     public void run() {
         switch (mode) {
@@ -55,7 +59,6 @@ public class VRServer implements Runnable {
     }
 
     private void runBaselineMode() {
-        Socket clientSock;
         try {
             String filename = "storage/rhino.mp4";
             File file = new File(filename);
@@ -75,16 +78,16 @@ public class VRServer implements Runnable {
         while (true) {
             if (this.hasSentManifest) {
                 // send video segments
-                for (int segId = 1; segId <= manifest.getVideoSegmentAmount(); segId++) {
+                for (int segId = 1; segId <= fullSizeManifest.getVideoSegmentAmount(); segId++) {
                     try {
                         // get user fov metadata (key frame)
                         TCPSerializeReceiver<FOVMetadata> fovMetadataTCPSerializeReceiver = new TCPSerializeReceiver<FOVMetadata>(ss);
                         fovMetadataTCPSerializeReceiver.request();
 
-                        // inspect storage manifest to know if there is a matched video segment, if yes, send the most-match FOV, no, send FULL
+                        // inspect storage fullSizeManifest to know if there is a matched video segment, if yes, send the most-match FOV, no, send FULL
                         FOVMetadata userFOVMetaData = fovMetadataTCPSerializeReceiver.getSerializeObj();
                         System.out.println("[[STEP 2 SEGMENT #" + segId + "]] Get user fov: " + userFOVMetaData);
-                        Vector<FOVMetadata> pathMetadataVec = manifest.getPredMetaDataVec().get(segId).getPathVec();
+                        Vector<FOVMetadata> pathMetadataVec = fullSizeManifest.getPredMetaDataVec().get(segId).getPathVec();
                         int videoSizeMsg = FOVProtocol.FULL;
                         for (int i = 0; i < pathMetadataVec.size(); i++) {
                             FOVMetadata pathMetadata = pathMetadataVec.get(i);
@@ -95,35 +98,39 @@ public class VRServer implements Runnable {
                             }
                         }
 
-                        TCPSerializeSender<Integer> sizeMsgRequest = new TCPSerializeSender<Integer>(this.ss, videoSizeMsg);
+                        TCPSerializeSender<Integer> sizeMsgRequest = new TCPSerializeSender<>(this.ss, videoSizeMsg);
                         sizeMsgRequest.request();
                         System.out.println("[STEP 3] send video size msg: " + videoSizeMsg);
 
-                        // TODO choose the right video segment to send, now always send full size video segment
-                        // send video segment
-                        String filename = Utilities.getFullSizeSegmentName(videoSegmentDir, this.storageFilename, segId);
-                        TCPFileSender tcpFileSender = new TCPFileSender(ss, filename);
+                        String videoFileName;
+                        if (videoSizeMsg == FOVProtocol.FULL) {
+                            videoFileName = Utilities.getServerFullSizeSegmentName(fullSegmentDir, this.storageFilename, segId);
+                        } else {
+                            videoFileName = Utilities.getServerFOVSegmentName(fovSegmentDir, segId, videoSizeMsg);
+                        }
+                        TCPFileSender tcpFileSender = new TCPFileSender(ss, videoFileName);
                         tcpFileSender.request();
                         if (videoSizeMsg == FOVProtocol.FULL) {
-                            System.out.println("[STEP 5] Send full size: " + filename + " from VRServer");
+                            System.out.println("[STEP 5] Send full size: " + videoFileName + " from VRServer");
                         } else {
-                            System.out.println("[STEP 5] Send fov size: " + filename + " from VRServer");
+                            System.out.println("[STEP 5] Send fov size: " + videoFileName + " from VRServer");
                         }
 
                         // wait for "GOOD" or "BAD" message from VRPlayer
                         // if GOOD: continue the next iteration
                         // if BAD: send back full size video segment
                         if (FOVProtocol.isFOV(videoSizeMsg)) {
-                            TCPSerializeReceiver<Integer> finReceiver = new TCPSerializeReceiver<Integer>(ss);
+                            TCPSerializeReceiver<Integer> finReceiver = new TCPSerializeReceiver<>(ss);
                             finReceiver.request();
                             int finMsg = finReceiver.getSerializeObj();
                             System.out.println("[Step 8] Receive final message: " + FOVProtocol.print(finMsg));
 
                             if (finMsg == FOVProtocol.BAD) {
                                 // send video segment
-                                tcpFileSender = new TCPFileSender(ss, filename);
+                                videoFileName = Utilities.getServerFullSizeSegmentName(fullSegmentDir, this.storageFilename, segId);
+                                tcpFileSender = new TCPFileSender(ss, videoFileName);
                                 tcpFileSender.request();
-                                System.out.println("[STEP 9] Send full size: " + filename + " from VRServer");
+                                System.out.println("[STEP 9] Send full size: " + videoFileName + " from VRServer");
                             }
                         }
 
@@ -133,17 +140,17 @@ public class VRServer implements Runnable {
                     }
                 }
             } else {
-                // create manifest file for VRServer to send to VRPlayer
-                manifest = new Manifest(videoSegmentDir, predFilename);
+                // create full size fullSizeManifest file
+                fullSizeManifest = new VideoSegmentManifest(fullSegmentDir, predFilename);
                 try {
-                    manifest.write(fullSizeManifestName);
+                    fullSizeManifest.write(fullSizeManifestName);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-                // send the manifest file just created
-                System.out.println("[STEP 0-1] Send manifest file to VRPlayer");
-                System.out.println("Manifest file size: " + new File(fullSizeManifestName).length());
+                // send the fullSizeManifest file just created
+                System.out.println("[STEP 0-1] Send fullSizeManifest file to VRPlayer");
+                System.out.println("VideoSegmentManifest file size: " + new File(fullSizeManifestName).length());
                 try {
                     TCPFileSender tcpFileSender = new TCPFileSender(ss, fullSizeManifestName);
                     tcpFileSender.request();
@@ -167,7 +174,8 @@ public class VRServer implements Runnable {
                 args[1],
                 args[2],
                 args[3],
-                Utilities.string2mode(args[4]));
+                args[4],
+                Utilities.string2mode(args[5]));
         vrServer.run();
     }
 }

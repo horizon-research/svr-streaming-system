@@ -8,7 +8,7 @@ import java.util.Vector;
  * This class handles the creation and parsing of manifest files. The manifest file includes the file size of all the
  * video segments.
  */
-public class Manifest implements Serializable {
+public class VideoSegmentManifest implements Serializable {
     private int length;
     private Vector<VideoSegmentMetaData> predMetaDataVec;
 
@@ -33,7 +33,7 @@ public class Manifest implements Serializable {
      * @param storagePath     should be a path to a directory.
      * @param predFilePath    path to a object detection file of the video.
      */
-    public Manifest(String storagePath, String predFilePath) {
+    public VideoSegmentManifest(String storagePath, String predFilePath) {
         Vector<Vector<FOVMetadata>> fovMetadata2DVec = parsePredFile(predFilePath);
 
         // get video segment size and feed into
@@ -44,8 +44,7 @@ public class Manifest implements Serializable {
         // padding
         predMetaDataVec.add(new VideoSegmentMetaData(null, -1L));
 
-        // TODO now iterate whole file with the name rhino/output_xx.mp4, but we have rhino/1/3.mp4
-        // TODO manifest should have the file size of all of the video segment includi
+        // Iterate whole file with the name rhino/output_xx.mp4
         if (storageDirectory.exists() && storageDirectory.isDirectory()) {
             File[] dirList = storageDirectory.listFiles();
             assert dirList != null;
@@ -66,11 +65,13 @@ public class Manifest implements Serializable {
         this.length = predMetaDataVec.size();
     }
 
+    private int getPathLen(int segId, int pathId) { return predMetaDataVec.get(segId).getPathVec().get(pathId).getFileLength(); }
+
+    // parse predict file metadata into fovMetadata2DVec.
     private Vector<Vector<FOVMetadata>> parsePredFile(String predFileName) {
         File predFile = new File(predFileName);
         Vector<Vector<FOVMetadata>> fovMetadata2DVec = new Vector<>();
 
-        // parse predict file into fovMetadata2DVec.
         fovMetadata2DVec.add(null);
         if (predFile.exists()) {
             try {
@@ -92,7 +93,12 @@ public class Manifest implements Serializable {
                             fovMetadataVec = new Vector<>();
                         }
                     }
-                    fovMetadataVec.add(new FOVMetadata(line, FOVProtocol.FOV_SIZE_WIDTH, FOVProtocol.FOV_SIZE_HEIGHT));
+                    FOVMetadata fovMD = new FOVMetadata(line, FOVProtocol.FOV_SIZE_WIDTH, FOVProtocol.FOV_SIZE_HEIGHT);
+                    String filename = Utilities.getServerFOVSegmentName("storage/rhino-fov", id, pathId);
+                    File vf = new File(filename);
+                    int fileLen = (int) vf.length();
+                    fovMD.setFileLength(fileLen);
+                    fovMetadataVec.add(fovMD);
                 }
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -122,9 +128,14 @@ public class Manifest implements Serializable {
      * @param i identifier of video segment.
      * @return size of video segment.
      */
-    public long getVideoSegmentLength(int i) {
+    public long getFullSizeVideoSegmentLength(int i) {
         assert (i > 0);
         return predMetaDataVec.get(i).size;
+    }
+
+    public int getFovVideoSegmentLength(int segId, int pathId) {
+        assert (segId > 0 && pathId >= 0);
+        return this.getPathLen(segId, pathId);
     }
 
     /**
@@ -139,7 +150,7 @@ public class Manifest implements Serializable {
 
     @Override
     public String toString() {
-        return "Manifest{" +
+        return "VideoSegmentManifest{" +
                 "length=" + length +
                 ", predMetaDataVec=" + predMetaDataVec +
                 '}';
