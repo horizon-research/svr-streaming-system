@@ -79,15 +79,14 @@ public class VRPlayer {
         }
     }
 
-    /**
-     * getSegFilenameFromId.
-     *
-     * @param id identifier of the video segment.
-     * @return name of video segment.
-     */
-    private String getSegFilenameFromId(int id) {
-        return Utilities.getSegmentName(segmentPath, segFilename, id);
+    private String getFullSegFilenameFromId(int id) {
+        return Utilities.getFullSizeSegmentName(segmentPath, segFilename, id);
     }
+
+    private String getFOVSegFilenameFromId(int id, int pathid) {
+        return Utilities.getFOVSegmentName(segmentPath, id, pathid);
+    }
+
 
     private void downloadVideoSegment() {
         VideoSegmentDownloader videoSegmentDownloader =
@@ -116,7 +115,7 @@ public class VRPlayer {
         long size = sizeMsgRecv.getSerializeObj();
 
         downloadVideoSegment((int) size);
-        String videoFilename = getSegFilenameFromId(currFovSegTop);
+        String videoFilename = getFullSegFilenameFromId(currFovSegTop);
         PlayNative play =
                 new PlayNative(videoFilename, 0, -1);
     }
@@ -152,9 +151,9 @@ public class VRPlayer {
                 FOVMetadata pathMetadata = pathMetadataVec.get(predPathMsg);
                 int secondDownloadMsg = FOVProtocol.GOOD;
                 int totalDecodedFrame = 0;
-                // TODO fov file name should be corrected after storage has been prepared
-                String videoFilename = getSegFilenameFromId(currFovSegTop);
-                // TODO decode fov until fovTrace not match
+                String videoFilename = getFOVSegFilenameFromId(currFovSegTop, predPathMsg);
+
+                // Iterate fov until fovTrace not match
                 for (int i = 0; i < FRAME_PER_VIDEO_SEGMENT; i++) {
                     FOVMetadata userFov = fovTraces.get(keyFrameID);
                     double coverRatio = pathMetadata.getOverlapRate(userFov);
@@ -182,15 +181,12 @@ public class VRPlayer {
                     System.out.println("[STEP 10] Download full size video segment from VRServer");
                     downloadVideoSegment();
 
-                    // TODO the file name of full size video segment is the same as fov video segment for now
                     System.out.println("[DEBUG] Start decode from frame: " + totalDecodedFrame);
-                    videoFilename = getSegFilenameFromId(currFovSegTop);
-                    // TODO decodeVideoSegment(videoFilename, totalDecodedFrame);
+                    videoFilename = getFullSegFilenameFromId(currFovSegTop);
                     new PlayNative(videoFilename, totalDecodedFrame, -1);
                 }
             } else if (FOVProtocol.isFull(predPathMsg)) {
-                // TODO the file name of full size video segment is the same as fov video segment for now
-                String filename = getSegFilenameFromId(currFovSegTop);
+                String filename = getFullSegFilenameFromId(currFovSegTop);
                 new PlayNative(filename, 0, -1);
             } else {
                 // should never go here

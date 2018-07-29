@@ -11,7 +11,7 @@ public class Utilities {
      * @param i    sequential id of video segment.
      * @return name of the video segment.
      */
-    public static String getSegmentName(String dir, String name, int i) {
+    public static String getFullSizeSegmentName(String dir, String name, int i) {
         return dir + "/" + name + "_" + Integer.toString(i) + ".mp4";
     }
 
@@ -24,7 +24,7 @@ public class Utilities {
      * @param ext  file extension of the video segment.
      * @return name of the video segment.
      */
-    public static String getSegmentName(String dir, String name, int i, String ext) {
+    public static String getFullSizeSegmentName(String dir, String name, int i, String ext) {
         return dir + "/" + name + "_" + Integer.toString(i) + "." + ext;
     }
 
@@ -34,11 +34,23 @@ public class Utilities {
      * @param segName the name of video segment.
      * @return identifier of the video segment.
      */
-    public static int getIdFromSegmentName(String segName) {
+    public static int getIdFromFullSizeSegmentName(String segName) {
         int pos1 = segName.indexOf('_');
         int pos2 = segName.indexOf('.');
-        String numstr = segName.substring(pos1 + 1, pos2);
-        return Integer.parseInt(numstr);
+        String numStr = segName.substring(pos1 + 1, pos2);
+        return Integer.parseInt(numStr);
+    }
+
+    /**
+     * Return the fov video segment name.
+     *
+     * @param dir    the path of video segment.
+     * @param id     segment id.
+     * @param pathid path id.
+     * @return
+     */
+    public static String getFOVSegmentName(String dir, int id, int pathid) {
+        return dir + "/" + Integer.toString(id) + "/" + Integer.toString(pathid) + ".mp4";
     }
 
     public enum Mode {
@@ -47,6 +59,7 @@ public class Utilities {
 
     /**
      * Convert from string to mode
+     *
      * @param str string could only be BASELINE or SVR.
      * @return mode.
      */

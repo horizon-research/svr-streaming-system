@@ -104,7 +104,7 @@ public class VRServer implements Runnable {
 
                         // TODO choose the right video segment to send, now always send full size video segment
                         // send video segment
-                        String filename = Utilities.getSegmentName(videoSegmentDir, this.storageFilename, segId);
+                        String filename = Utilities.getFullSizeSegmentName(videoSegmentDir, this.storageFilename, segId);
                         TCPFileSender tcpFileSender = new TCPFileSender(ss, filename);
                         tcpFileSender.request();
                         if (videoSizeMsg == FOVProtocol.FULL) {

@@ -15,6 +15,6 @@ public class VideoSegmentDownloader extends TCPDownloader {
     public VideoSegmentDownloader(String host, int port, String path, String filename,
                                   int snb, int segLen) {
         // init instance variables
-        super(host, port, Utilities.getSegmentName(path, filename, snb), segLen);
+        super(host, port, Utilities.getFullSizeSegmentName(path, filename, snb), segLen);
     }
 }

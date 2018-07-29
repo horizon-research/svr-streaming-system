@@ -2,7 +2,6 @@ import com.google.gson.*;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Vector;
 
 /**
@@ -80,7 +79,7 @@ public class Manifest implements Serializable {
             Arrays.sort(dirList, (f1, f2) -> {
                 String f1name = f1.getName();
                 String f2name = f2.getName();
-                return Utilities.getIdFromSegmentName(f1name) - Utilities.getIdFromSegmentName(f2name);
+                return Utilities.getIdFromFullSizeSegmentName(f1name) - Utilities.getIdFromFullSizeSegmentName(f2name);
             });
             for (File f : dirList) {
                 int size = predMetaDataVec.size();
