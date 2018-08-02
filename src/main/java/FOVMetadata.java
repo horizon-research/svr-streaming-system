@@ -11,6 +11,7 @@ public class FOVMetadata implements Serializable {
     private int y;
     private int width;
     private int height;
+    private int fileLength;
 
     /**
      * Construct FOVMetadata object by parsing a string line.
@@ -27,19 +28,16 @@ public class FOVMetadata implements Serializable {
         this.y = Integer.parseInt(coord[1]);
         this.width = Integer.parseInt(coord[2]);
         this.height = Integer.parseInt(coord[3]);
+        this.fileLength = -1;
     }
 
-    FOVMetadata(String line) {
-        String[] columns = line.split("\\s");
-        this.id = Integer.parseInt(columns[0]);
-        this.pathId = Integer.parseInt(columns[1]);
-        String[] coord = columns[2].split(",");
-        this.x = Integer.parseInt(coord[0]);
-        this.y = Integer.parseInt(coord[1]);
-        this.width = Integer.parseInt(coord[2]);
-        this.height = Integer.parseInt(coord[3]);
-    }
-
+    /**
+     * Construct FOVMetadata object by parsing a string line with specified fov width and height to configure.
+     *
+     * @param line      string line of user trace file.
+     * @param width     fov width.
+     * @param height    fov height.
+     */
     FOVMetadata(String line, int width, int height) {
         String[] columns = line.split("\\s");
         this.id = Integer.parseInt(columns[0]);
@@ -51,27 +49,38 @@ public class FOVMetadata implements Serializable {
 
         this.x = Integer.parseInt(coord[0]) + ((temp_width - width) / 2);
         this.y = Integer.parseInt(coord[1]) + ((temp_height - height) / 2);
-        if (x < 0) {
-            this.x = width + x;
+
+        // WARNING: workarounds, should be same as how fov video is created.
+        if (this.x < 0) {
+            this.x = FOVProtocol.FULL_SIZE_WIDTH + x;
+            if (this.x > FOVProtocol.FULL_SIZE_WIDTH - width) {
+                this.x = FOVProtocol.FULL_SIZE_WIDTH - width;
+            }
+        }
+        if (this.x + width > FOVProtocol.FULL_SIZE_WIDTH) {
+            this.x = FOVProtocol.FULL_SIZE_WIDTH - width;
+        }
+        if (this.y + height > FOVProtocol.FULL_SIZE_HEIGHT - height) {
+            this.y = FOVProtocol.FULL_SIZE_HEIGHT - height;
         }
 
         this.width = width;
         this.height = height;
+        this.fileLength = -1;
     }
 
-    private FOVMetadata modifyWithSize(int width, int height) {
-        this.x = this.x + ((this.width - width) / 2);
-        this.y = this.y + ((this.height - height) / 2);
-        if (x < 0) {
-            this.x = FOVProtocol.FULL_SIZE_WIDTH + x;
-        }
-        this.width = width;
-        this.height = height;
-        return this;
+    /**
+     * Set fov file length for the fov object.
+     *
+     * @param len Length of a fov video segment.
+     */
+    public void setFileLength(int len) {
+        this.fileLength = len;
     }
 
     /**
      * Compute the overlap ratio of two viewport.
+     *
      * @param other the other fov metadata object.
      * @return overlap ratio.
      */
@@ -88,7 +97,7 @@ public class FOVMetadata implements Serializable {
                 double left_2 = Math.max(this.x, other.x);
                 double right_2 = FOVProtocol.FULL_SIZE_WIDTH;
                 total_x += right_2 - left_2;
-            } else if (other_rightmost <= FOVProtocol.FULL_SIZE_WIDTH && other_rightmost >= 0) {
+            } else if (other_rightmost >= 0) {
                 if (this.x + this.width - FOVProtocol.FULL_SIZE_WIDTH > other.x) {
                     double left = other.x;
                     double right = Math.min(self_rightmost - FOVProtocol.FULL_SIZE_WIDTH, other_rightmost);
@@ -102,7 +111,7 @@ public class FOVMetadata implements Serializable {
             } else {
                 assert (false);
             }
-        } else if (self_rightmost <= FOVProtocol.FULL_SIZE_WIDTH && self_rightmost >= 0) {
+        } else if (self_rightmost >= 0) {
             if (other_rightmost > FOVProtocol.FULL_SIZE_WIDTH) {
                 if (this.x < (other_rightmost - FOVProtocol.FULL_SIZE_WIDTH)) {
                     double left_1 = Math.max(this.x, 0);
@@ -111,10 +120,9 @@ public class FOVMetadata implements Serializable {
                 }
                 if (this.x + this.width > other.x) {
                     double left_2 = other.x;
-                    double right_2 = self_rightmost;
-                    total_x += right_2 - left_2;
+                    total_x += self_rightmost - left_2;
                 }
-            } else if (other_rightmost <= FOVProtocol.FULL_SIZE_WIDTH && other_rightmost >= 0) {
+            } else if (other_rightmost >= 0) {
                 double left = Math.max(this.x, other.x);
                 double right = Math.min(self_rightmost, other_rightmost);
                 if (right - left > 0) {
@@ -139,6 +147,10 @@ public class FOVMetadata implements Serializable {
             assert (false);
         }
         return ratio;
+    }
+
+    public int getFileLength() {
+        return this.fileLength;
     }
 
     @Override

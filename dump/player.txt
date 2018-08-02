@@ -1,1067 +1,1068 @@
-/usr/lib/jvm/java-8-openjdk-amd64/bin/java -javaagent:/home/aras/.local/share/JetBrains/Toolbox/apps/IDEA-U/ch-0/181.5281.24/lib/idea_rt.jar=34989:/home/aras/.local/share/JetBrains/Toolbox/apps/IDEA-U/ch-0/181.5281.24/bin -Dfile.encoding=UTF-8 -classpath /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/cldrdata.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/dnsns.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/icedtea-sound.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/jaccess.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/localedata.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/nashorn.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunec.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunjce_provider.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunpkcs11.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/zipfs.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jce.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jsse.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/management-agent.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/resources.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar:/home/aras/workspace/vros-client-server/target/classes:/home/aras/.m2/repository/org/jcodec/jcodec/0.2.3/jcodec-0.2.3.jar:/home/aras/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/home/aras/.m2/repository/org/jcodec/jcodec-javase/0.2.3/jcodec-javase-0.2.3.jar:/home/aras/.m2/repository/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar VRPlayer
-[[SEGMENT #1]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 3
-user fov: FOVMetadata{id=3, pathId=-1, x=3384, y=552, width=1224, height=1200}
-path metadata: FOVMetadata{id=1, pathId=4, x=28, y=175, width=1800, height=1800}
-overlap ratio: 0.6045751633986928
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+/usr/lib/jvm/java-8-openjdk-amd64/bin/java -javaagent:/home/aras/.local/share/JetBrains/Toolbox/apps/IDEA-U/ch-0/181.5281.24/lib/idea_rt.jar=33743:/home/aras/.local/share/JetBrains/Toolbox/apps/IDEA-U/ch-0/181.5281.24/bin -Dfile.encoding=UTF-8 -classpath /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/cldrdata.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/dnsns.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/icedtea-sound.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/jaccess.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/localedata.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/nashorn.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunec.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunjce_provider.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunpkcs11.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/zipfs.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jce.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jsse.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/management-agent.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/resources.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar:/home/aras/workspace/vros-client-server/target/classes:/home/aras/.m2/repository/org/jcodec/jcodec/0.2.3/jcodec-0.2.3.jar:/home/aras/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/home/aras/.m2/repository/org/jcodec/jcodec-javase/0.2.3/jcodec-javase-0.2.3.jar:/home/aras/.m2/repository/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar VRPlayer localhost 1988 tmp segment user-fov-trace.txt
+[STEP 0-2] Receive manifest from VRServer
+[STEP 1] SEGMENT #1 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 3
+[DEBUG] user fov: FOVMetadata{id=3, pathId=-1, x=3384, y=552, width=1224, height=1200}
+[DEBUG] path metadata: FOVMetadata{id=1, pathId=4, x=28, y=175, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.6045751633986928
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 3
 ---------------------------------------------------------
-[[SEGMENT #2]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #2 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #3]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 27
-user fov: FOVMetadata{id=27, pathId=-1, x=3384, y=528, width=1224, height=1200}
-path metadata: FOVMetadata{id=3, pathId=4, x=28, y=175, width=1800, height=1800}
-overlap ratio: 0.6045751633986928
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #3 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 27
+[DEBUG] user fov: FOVMetadata{id=27, pathId=-1, x=3384, y=528, width=1224, height=1200}
+[DEBUG] path metadata: FOVMetadata{id=3, pathId=4, x=28, y=175, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.6045751633986928
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 7
 ---------------------------------------------------------
-[[SEGMENT #4]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #5]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #6]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #7]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #8]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #9]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #10]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #11]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #12]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #13]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #14]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #15]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #16]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #17]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #18]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #19]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #20]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #21]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #22]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #23]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #24]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #25]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #26]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #27]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #28]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #29]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #30]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #31]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #32]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #33]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #34]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #35]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #36]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #37]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #38]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #39]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #40]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #41]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #42]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #43]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #44]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #45]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #46]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #47]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #48]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #49]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #50]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #51]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #52]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #53]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #54]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #55]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #56]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #57]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #58]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #59]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #60]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #61]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #62]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #63]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #64]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #65]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #66]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #67]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #68]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #69]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #70]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #71]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #72]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #73]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #74]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #75]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #76]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #77]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #78]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #79]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #80]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #81]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #82]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #83]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #84]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #85]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #86]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #87]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #88]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #89]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #90]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #91]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #92]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #93]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #94]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #95]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #96]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #97]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #98]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #99]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #100]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #101]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #102]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #103]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #104]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #105]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #106]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #107]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #108]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #109]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #110]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #111]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #112]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #113]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #114]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #115]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #116]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #117]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #118]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #119]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #120]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #121]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #122]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #123]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #124]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #125]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
----------------------------------------------------------
-[[SEGMENT #126]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1261
-user fov: FOVMetadata{id=1261, pathId=-1, x=3384, y=504, width=1224, height=1200}
-path metadata: FOVMetadata{id=126, pathId=4, x=28, y=175, width=1800, height=1800}
-overlap ratio: 0.6045751633986928
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #4 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #5 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #6 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #7 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #8 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #9 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #10 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #11 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #12 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #13 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #14 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #15 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #16 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #17 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #18 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #19 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #20 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #21 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #22 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #23 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #24 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #25 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #26 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #27 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #28 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #29 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #30 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #31 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #32 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #33 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #34 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #35 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #36 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #37 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #38 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #39 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #40 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #41 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #42 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #43 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #44 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #45 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #46 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #47 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #48 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #49 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #50 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #51 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #52 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #53 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #54 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #55 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #56 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #57 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #58 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #59 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #60 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #61 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #62 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #63 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #64 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #65 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #66 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #67 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #68 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #69 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #70 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #71 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #72 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #73 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #74 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #75 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #76 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #77 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #78 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #79 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #80 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #81 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #82 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #83 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #84 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #85 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #86 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #87 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #88 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #89 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #90 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #91 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #92 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #93 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #94 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #95 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #96 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #97 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #98 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #99 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #100 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #101 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #102 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #103 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #104 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #105 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #106 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #107 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #108 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #109 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #110 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #111 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #112 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #113 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #114 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #115 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #116 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #117 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #118 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #119 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #120 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #121 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #122 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #123 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #124 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #125 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
+---------------------------------------------------------
+[STEP 1] SEGMENT #126 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1261
+[DEBUG] user fov: FOVMetadata{id=1261, pathId=-1, x=3384, y=504, width=1224, height=1200}
+[DEBUG] path metadata: FOVMetadata{id=126, pathId=4, x=28, y=175, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.6045751633986928
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 11
 ---------------------------------------------------------
-[[SEGMENT #127]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1261
-user fov: FOVMetadata{id=1261, pathId=-1, x=3384, y=504, width=1224, height=1200}
-path metadata: FOVMetadata{id=127, pathId=4, x=28, y=175, width=1800, height=1800}
-overlap ratio: 0.6045751633986928
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #127 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1261
+[DEBUG] user fov: FOVMetadata{id=1261, pathId=-1, x=3384, y=504, width=1224, height=1200}
+[DEBUG] path metadata: FOVMetadata{id=127, pathId=4, x=28, y=175, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.6045751633986928
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 1
 ---------------------------------------------------------
-[[SEGMENT #128]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #128 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #129]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #129 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #130]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #130 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #131]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #131 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #132]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #132 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #133]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #133 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #134]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #134 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #135]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1348
-user fov: FOVMetadata{id=1348, pathId=-1, x=2376, y=480, width=1224, height=1224}
-path metadata: FOVMetadata{id=135, pathId=9, x=2430, y=99, width=1800, height=1800}
-overlap ratio: 0.9558823529411765
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #135 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1348
+[DEBUG] user fov: FOVMetadata{id=1348, pathId=-1, x=2376, y=480, width=1224, height=1224}
+[DEBUG] path metadata: FOVMetadata{id=135, pathId=9, x=2430, y=99, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.9558823529411765
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 8
 ---------------------------------------------------------
-[[SEGMENT #136]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #136 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #137]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #137 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #138]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #138 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #139]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #139 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #140]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #140 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #141]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1412
-user fov: FOVMetadata{id=1412, pathId=-1, x=2040, y=504, width=1224, height=1224}
-path metadata: FOVMetadata{id=141, pathId=2, x=1405, y=150, width=1800, height=1800}
-overlap ratio: 0.951797385620915
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #141 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1412
+[DEBUG] user fov: FOVMetadata{id=1412, pathId=-1, x=2040, y=504, width=1224, height=1224}
+[DEBUG] path metadata: FOVMetadata{id=141, pathId=2, x=1405, y=150, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.951797385620915
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 12
 ---------------------------------------------------------
-[[SEGMENT #142]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1412
-user fov: FOVMetadata{id=1412, pathId=-1, x=2040, y=504, width=1224, height=1224}
-path metadata: FOVMetadata{id=142, pathId=2, x=1405, y=150, width=1800, height=1800}
-overlap ratio: 0.951797385620915
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #142 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1412
+[DEBUG] user fov: FOVMetadata{id=1412, pathId=-1, x=2040, y=504, width=1224, height=1224}
+[DEBUG] path metadata: FOVMetadata{id=142, pathId=2, x=1405, y=150, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.951797385620915
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 2
 ---------------------------------------------------------
-[[SEGMENT #143]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1421
-user fov: FOVMetadata{id=1421, pathId=-1, x=2136, y=480, width=1224, height=1224}
-path metadata: FOVMetadata{id=143, pathId=3, x=1495, y=-39, width=1800, height=1800}
-overlap ratio: 0.9468954248366013
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #143 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1421
+[DEBUG] user fov: FOVMetadata{id=1421, pathId=-1, x=2136, y=480, width=1224, height=1224}
+[DEBUG] path metadata: FOVMetadata{id=143, pathId=3, x=1495, y=-39, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.9468954248366013
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 1
 ---------------------------------------------------------
-[[SEGMENT #144]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #144 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #145]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #145 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #146]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #146 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #147]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #147 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #148]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #148 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #149]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #149 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #150]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #150 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #151]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #151 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #152]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #152 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #153]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #153 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #154]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #154 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #155]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #155 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #156]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #156 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #157]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #157 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #158]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #158 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #159]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #159 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #160]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #160 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #161]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #161 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #162]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #162 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #163]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #163 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #164]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #164 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #165]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #165 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #166]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #166 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #167]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #167 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #168]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #168 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #169]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #169 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #170]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #170 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #171]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #171 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #172]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #172 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #173]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #173 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #174]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #174 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #175]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #175 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #176]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #176 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #177]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #177 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #178]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1784
-user fov: FOVMetadata{id=1784, pathId=-1, x=3120, y=456, width=1224, height=1200}
-path metadata: FOVMetadata{id=178, pathId=9, x=2430, y=99, width=1800, height=1800}
-overlap ratio: 0.9068627450980392
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #178 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1784
+[DEBUG] user fov: FOVMetadata{id=1784, pathId=-1, x=3120, y=456, width=1224, height=1200}
+[DEBUG] path metadata: FOVMetadata{id=178, pathId=9, x=2430, y=99, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.9068627450980392
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 14
 ---------------------------------------------------------
-[[SEGMENT #179]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1784
-user fov: FOVMetadata{id=1784, pathId=-1, x=3120, y=456, width=1224, height=1200}
-path metadata: FOVMetadata{id=179, pathId=9, x=2430, y=99, width=1800, height=1800}
-overlap ratio: 0.9068627450980392
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #179 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1784
+[DEBUG] user fov: FOVMetadata{id=1784, pathId=-1, x=3120, y=456, width=1224, height=1200}
+[DEBUG] path metadata: FOVMetadata{id=179, pathId=9, x=2430, y=99, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.9068627450980392
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 4
 ---------------------------------------------------------
-[[SEGMENT #180]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-[DEBUG] send back GOOD
+[STEP 1] SEGMENT #180 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[STEP 7] send back GOOD
 ---------------------------------------------------------
-[[SEGMENT #181]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1810
-user fov: FOVMetadata{id=1810, pathId=-1, x=3120, y=456, width=1224, height=1200}
-path metadata: FOVMetadata{id=181, pathId=9, x=2430, y=99, width=1800, height=1800}
-overlap ratio: 0.9068627450980392
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #181 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1810
+[DEBUG] user fov: FOVMetadata{id=1810, pathId=-1, x=3120, y=456, width=1224, height=1200}
+[DEBUG] path metadata: FOVMetadata{id=181, pathId=9, x=2430, y=99, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.9068627450980392
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 10
 ---------------------------------------------------------
-[[SEGMENT #182]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #182 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #183]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1831
-user fov: FOVMetadata{id=1831, pathId=-1, x=3072, y=432, width=1224, height=1224}
-path metadata: FOVMetadata{id=183, pathId=9, x=2430, y=99, width=1800, height=1800}
-overlap ratio: 0.946078431372549
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #183 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1831
+[DEBUG] user fov: FOVMetadata{id=1831, pathId=-1, x=3072, y=432, width=1224, height=1224}
+[DEBUG] path metadata: FOVMetadata{id=183, pathId=9, x=2430, y=99, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.946078431372549
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 11
 ---------------------------------------------------------
-[[SEGMENT #184]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1831
-user fov: FOVMetadata{id=1831, pathId=-1, x=3072, y=432, width=1224, height=1224}
-path metadata: FOVMetadata{id=184, pathId=9, x=2430, y=99, width=1800, height=1800}
-overlap ratio: 0.946078431372549
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #184 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1831
+[DEBUG] user fov: FOVMetadata{id=1831, pathId=-1, x=3072, y=432, width=1224, height=1224}
+[DEBUG] path metadata: FOVMetadata{id=184, pathId=9, x=2430, y=99, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.946078431372549
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 1
 ---------------------------------------------------------
-[[SEGMENT #185]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #185 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #186]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #186 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #187]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #187 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #188]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1873
-user fov: FOVMetadata{id=1873, pathId=-1, x=3144, y=432, width=1224, height=1224}
-path metadata: FOVMetadata{id=188, pathId=9, x=2430, y=99, width=1800, height=1800}
-overlap ratio: 0.8872549019607843
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #188 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1873
+[DEBUG] user fov: FOVMetadata{id=1873, pathId=-1, x=3144, y=432, width=1224, height=1224}
+[DEBUG] path metadata: FOVMetadata{id=188, pathId=9, x=2430, y=99, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.8872549019607843
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 3
 ---------------------------------------------------------
-[[SEGMENT #189]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1892
-user fov: FOVMetadata{id=1892, pathId=-1, x=3120, y=456, width=1224, height=1200}
-path metadata: FOVMetadata{id=189, pathId=9, x=2430, y=99, width=1800, height=1800}
-overlap ratio: 0.9068627450980392
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #189 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1892
+[DEBUG] user fov: FOVMetadata{id=1892, pathId=-1, x=3120, y=456, width=1224, height=1200}
+[DEBUG] path metadata: FOVMetadata{id=189, pathId=9, x=2430, y=99, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.9068627450980392
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 12
 ---------------------------------------------------------
-[[SEGMENT #190]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1892
-user fov: FOVMetadata{id=1892, pathId=-1, x=3120, y=456, width=1224, height=1200}
-path metadata: FOVMetadata{id=190, pathId=9, x=2430, y=99, width=1800, height=1800}
-overlap ratio: 0.9068627450980392
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #190 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1892
+[DEBUG] user fov: FOVMetadata{id=1892, pathId=-1, x=3120, y=456, width=1224, height=1200}
+[DEBUG] path metadata: FOVMetadata{id=190, pathId=9, x=2430, y=99, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.9068627450980392
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 2
 ---------------------------------------------------------
-[[SEGMENT #191]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #191 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #192]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #192 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #193]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #193 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #194]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #194 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #195]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #195 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #196]] send metadata to server
-[DEBUG] get size message: FOV
-[DEBUG] download video segment
-fail at keyFrameID: 1951
-user fov: FOVMetadata{id=1951, pathId=-1, x=3120, y=456, width=1224, height=1200}
-path metadata: FOVMetadata{id=196, pathId=9, x=2430, y=99, width=1800, height=1800}
-overlap ratio: 0.9068627450980392
-[DEBUG] send back BAD
-[DEBUG] request for full size video segment as compensation
+[STEP 1] SEGMENT #196 send metadata to server
+[STEP 4] get size message: FOV
+[STEP 6] download video segment from VRServer
+[DEBUG] fail at keyFrameID: 1951
+[DEBUG] user fov: FOVMetadata{id=1951, pathId=-1, x=3120, y=456, width=1224, height=1200}
+[DEBUG] path metadata: FOVMetadata{id=196, pathId=9, x=2430, y=99, width=1800, height=1800}
+[DEBUG] overlap ratio: 0.9068627450980392
+[STEP 7] send back BAD
+[STEP 10] Download full size video segment from VRServer
 [DEBUG] Start decode from frame: 1
 ---------------------------------------------------------
-[[SEGMENT #197]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #197 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #198]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #198 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #199]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #199 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------
-[[SEGMENT #200]] send metadata to server
-[DEBUG] get size message: FULL
-[DEBUG] download video segment
+[STEP 1] SEGMENT #200 send metadata to server
+[STEP 4] get size message: FULL
+[STEP 6] download video segment from VRServer
 ---------------------------------------------------------

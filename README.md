@@ -4,9 +4,12 @@ and bandwidth usage on client-side.
 
 ## TODO
 - [X] basic streaming system support using a manifest file to request for video segment
-- [ ] fov logic
-    - [ ] VRPlayer read a user fov file and then request video segment with the coordination
-    - [ ] VRServer response to VRPlayer with fov or a full frame segment
+- [X] fov logic
+    - [X] VRPlayer read a user fov file and then request video segment with the coordination
+    - [X] VRServer response to VRPlayer with fov or a full frame segment
+- [ ] Write script for creating video segments
+    - [ ] Full size video segment
+    - [ ] FOV video segment
 - [ ] efficient gui 
     - [ ] read [this](https://pavelfatin.com/low-latency-painting-in-awt-and-swing/)
 - [ ] native/optimized decoder
@@ -28,8 +31,20 @@ Run VRServer first and then launch VRPlayer. If there is any error, it might due
 the path of storage and the video segment name in the main function.
 
 ## Compilation
-- use intellij for now since it deal with maven for deps for me
-
+- this repository now has only been tested on ubuntu 16.04
+- install openjdk version > 1.8
+- install maven
+    - sudo apt-get install mvn
+    - if mvn doesn't work, replace it with maven
+- mvn package
+- prepare resources
+    - see the Prepare Video Segment part
+    - cp -r storage/ target/
+- VRServer
+    - `java -jar vrserver.jar 1988 storage/rhino output storage/rhinos-pred.txt SVR`
+- VRPlayer
+    - `java -jar vrplayer.jar localhost 1988 tmp segment user-fov-trace.txt SVR`
+    
 ## Implementation
 - VRServer
     - Create manifest file using:
