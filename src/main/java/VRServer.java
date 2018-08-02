@@ -58,19 +58,39 @@ public class VRServer implements Runnable {
         }
     }
 
-    private void runBaselineMode() {
+    private void sendManifest() {
+        // create and write manifest file
+        fullSizeManifest = new VideoSegmentManifest(fullSegmentDir, predFilename);
         try {
-            String filename = "storage/rhino.mp4";
-            File file = new File(filename);
-            System.out.println(filename + " size: " + file.length());
+            fullSizeManifest.write(fullSizeManifestName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-            TCPSerializeSender<Long> sizeMsgRequest = new TCPSerializeSender<>(this.ss, file.length());
-            sizeMsgRequest.request();
+        // send the manifest file just created
+        System.out.println("[STEP 0-1] Send fullSizeManifest file to VRPlayer");
+        System.out.println("VideoSegmentManifest file size: " + new File(fullSizeManifestName).length());
+        try {
+            File file = new File(fullSizeManifestName);
+            TCPSerializeSender<Integer> manifestLenSender = new TCPSerializeSender<>(this.ss, (int) file.length());
+            manifestLenSender.request();
 
-            TCPFileSender tcpFileSender = new TCPFileSender(ss, filename);
+            TCPFileSender tcpFileSender = new TCPFileSender(ss, fullSizeManifestName);
             tcpFileSender.request();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        this.hasSentManifest = true;
+    }
+
+    private void runBaselineMode() {
+        while (true) {
+            if (!hasSentManifest) {
+                sendManifest();
+            } else {
+                break;
+            }
         }
     }
 
@@ -104,30 +124,9 @@ public class VRServer implements Runnable {
                     System.out.println("[STEP 3] send video path msg: " + sizeMsg);
                     System.out.println("---------------------------------------------------------");
                 }
+                break;
             } else {
-                // create and write manifest file
-                fullSizeManifest = new VideoSegmentManifest(fullSegmentDir, predFilename);
-                try {
-                    fullSizeManifest.write(fullSizeManifestName);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                // send the manifest file just created
-                System.out.println("[STEP 0-1] Send fullSizeManifest file to VRPlayer");
-                System.out.println("VideoSegmentManifest file size: " + new File(fullSizeManifestName).length());
-                try {
-                    File file = new File(fullSizeManifestName);
-                    TCPSerializeSender<Integer> manifestLenSender = new TCPSerializeSender<>(this.ss, (int) file.length());
-                    manifestLenSender.request();
-
-                    TCPFileSender tcpFileSender = new TCPFileSender(ss, fullSizeManifestName);
-                    tcpFileSender.request();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                this.hasSentManifest = true;
+                sendManifest();
             }
         }
     }
