@@ -5,7 +5,7 @@ import java.io.IOException;
 /**
  * Download specified file using TCP/IP.
  */
-public class TCPDownloader extends TCPRequest {
+public class TCPFileReceiver extends TCPRequest {
     private String path;
     private int length;
 
@@ -17,7 +17,7 @@ public class TCPDownloader extends TCPRequest {
      * @param path   the path of the downloaded file.
      * @param length the file size of the downloaded file.
      */
-    public TCPDownloader(String host, int port, String path, int length) {
+    public TCPFileReceiver(String host, int port, String path, int length) {
         super(host, port);
         this.path = path;
         this.length = length;

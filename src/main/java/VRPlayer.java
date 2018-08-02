@@ -49,7 +49,11 @@ public class VRPlayer {
                 BaselineNetworkHandler();
                 break;
             case SVR:
-                downloadAndParseManifest();
+                TCPSerializeReceiver<Integer> manifestSizeRecv = new TCPSerializeReceiver<>(host, port);
+                manifestSizeRecv.request();
+                int size = manifestSizeRecv.getSerializeObj();
+
+                downloadAndParseManifest(size);
                 SVRNetworkHandler();
                 System.out.println("[STEP 0-2] Receive manifest from VRServer");
                 break;
@@ -62,8 +66,8 @@ public class VRPlayer {
     /**
      * Download manifest file and feed it into manifest object
      */
-    private void downloadAndParseManifest() {
-        ManifestDownloader manifestDownloader = new ManifestDownloader(host, port, CLIENT_FULLSIZE_MANIFEST);
+    private void downloadAndParseManifest(int length) {
+        TCPFileReceiver manifestDownloader = new TCPFileReceiver(host, port, CLIENT_FULLSIZE_MANIFEST, length);
         try {
             manifestDownloader.request();
         } catch (IOException e) {

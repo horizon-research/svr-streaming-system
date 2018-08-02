@@ -1,7 +1,7 @@
 /**
  * For VRPlayer to download video segments.
  */
-public class FOVVideoSegmentDownloader extends TCPDownloader {
+public class FOVVideoSegmentDownloader extends TCPFileReceiver {
     /**
      * Setup for downloading a fov video segment.
      *

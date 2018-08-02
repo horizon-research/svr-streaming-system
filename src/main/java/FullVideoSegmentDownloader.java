@@ -1,7 +1,7 @@
 /**
  * For VRPlayer to download video segments.
  */
-public class FullVideoSegmentDownloader extends TCPDownloader {
+public class FullVideoSegmentDownloader extends TCPFileReceiver {
     /**
      * Setup for downloading a video segment.
      *

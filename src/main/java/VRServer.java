@@ -6,6 +6,7 @@ import java.util.Vector;
  * This object is a server sending fullSizeManifest file and video segments to VRPlayer.
  */
 public class VRServer implements Runnable {
+    private static final String fullSizeManifestName = "server-full.txt";
     private ServerSocket ss;
     private String fullSegmentDir;
     private String fovSegmentDir;
@@ -13,7 +14,6 @@ public class VRServer implements Runnable {
     private String predFilename;
     private boolean hasSentManifest;
     private VideoSegmentManifest fullSizeManifest;
-    private static final String fullSizeManifestName = "server-full.txt";
     private Utilities.Mode mode;
 
     /**
@@ -80,37 +80,39 @@ public class VRServer implements Runnable {
                 // send video segments
                 for (int segId = 1; segId <= fullSizeManifest.getVideoSegmentAmount(); segId++) {
                     try {
-                        // get user fov metadata (key frame)
-                        TCPSerializeReceiver<FOVMetadata> fovMetadataTCPSerializeReceiver = new TCPSerializeReceiver<FOVMetadata>(ss);
+                        // Get user fov metadata (only for key frame)
+                        TCPSerializeReceiver<FOVMetadata> fovMetadataTCPSerializeReceiver = new TCPSerializeReceiver<>(ss);
                         fovMetadataTCPSerializeReceiver.request();
 
-                        // inspect storage fullSizeManifest to know if there is a matched video segment, if yes, send the most-match FOV, no, send FULL
+                        // Inspect storage fullSizeManifest to know if there is a matched video segment,
+                        // if yes, send the most-match FOV,
+                        // if no, send FULL.
                         FOVMetadata userFOVMetaData = fovMetadataTCPSerializeReceiver.getSerializeObj();
                         System.out.println("[[STEP 2 SEGMENT #" + segId + "]] Get user fov: " + userFOVMetaData);
                         Vector<FOVMetadata> pathMetadataVec = fullSizeManifest.getPredMetaDataVec().get(segId).getPathVec();
-                        int videoSizeMsg = FOVProtocol.FULL;
+                        int sizeMsg = FOVProtocol.FULL;
                         for (int i = 0; i < pathMetadataVec.size(); i++) {
                             FOVMetadata pathMetadata = pathMetadataVec.get(i);
                             double ratio = pathMetadata.getOverlapRate(userFOVMetaData);
                             if (ratio >= FOVProtocol.THRESHOLD) {
-                                videoSizeMsg = i;
+                                sizeMsg = i;
                                 break;
                             }
                         }
 
-                        TCPSerializeSender<Integer> sizeMsgRequest = new TCPSerializeSender<>(this.ss, videoSizeMsg);
-                        sizeMsgRequest.request();
-                        System.out.println("[STEP 3] send video size msg: " + videoSizeMsg);
+                        TCPSerializeSender<Integer> pathMsgRequest = new TCPSerializeSender<>(this.ss, sizeMsg);
+                        pathMsgRequest.request();
+                        System.out.println("[STEP 3] send video path msg: " + sizeMsg);
 
                         String videoFileName;
-                        if (videoSizeMsg == FOVProtocol.FULL) {
+                        if (sizeMsg == FOVProtocol.FULL) {
                             videoFileName = Utilities.getServerFullSizeSegmentName(fullSegmentDir, this.storageFilename, segId);
                         } else {
-                            videoFileName = Utilities.getServerFOVSegmentName(fovSegmentDir, segId, videoSizeMsg);
+                            videoFileName = Utilities.getServerFOVSegmentName(fovSegmentDir, segId, sizeMsg);
                         }
                         TCPFileSender tcpFileSender = new TCPFileSender(ss, videoFileName);
                         tcpFileSender.request();
-                        if (videoSizeMsg == FOVProtocol.FULL) {
+                        if (sizeMsg == FOVProtocol.FULL) {
                             System.out.println("[STEP 5] Send full size: " + videoFileName + " from VRServer");
                         } else {
                             System.out.println("[STEP 5] Send fov size: " + videoFileName + " from VRServer");
@@ -119,7 +121,7 @@ public class VRServer implements Runnable {
                         // wait for "GOOD" or "BAD" message from VRPlayer
                         // if GOOD: continue the next iteration
                         // if BAD: send back full size video segment
-                        if (FOVProtocol.isFOV(videoSizeMsg)) {
+                        if (FOVProtocol.isFOV(sizeMsg)) {
                             TCPSerializeReceiver<Integer> finReceiver = new TCPSerializeReceiver<>(ss);
                             finReceiver.request();
                             int finMsg = finReceiver.getSerializeObj();
@@ -140,7 +142,7 @@ public class VRServer implements Runnable {
                     }
                 }
             } else {
-                // create full size fullSizeManifest file
+                // create and write manifest file
                 fullSizeManifest = new VideoSegmentManifest(fullSegmentDir, predFilename);
                 try {
                     fullSizeManifest.write(fullSizeManifestName);
@@ -148,10 +150,14 @@ public class VRServer implements Runnable {
                     e.printStackTrace();
                 }
 
-                // send the fullSizeManifest file just created
+                // send the manifest file just created
                 System.out.println("[STEP 0-1] Send fullSizeManifest file to VRPlayer");
                 System.out.println("VideoSegmentManifest file size: " + new File(fullSizeManifestName).length());
                 try {
+                    File file = new File(fullSizeManifestName);
+                    TCPSerializeSender<Integer> manifestLenSender = new TCPSerializeSender<>(this.ss, (int) file.length());
+                    manifestLenSender.request();
+
                     TCPFileSender tcpFileSender = new TCPFileSender(ss, fullSizeManifestName);
                     tcpFileSender.request();
                 } catch (IOException e) {
