@@ -7,13 +7,12 @@ and bandwidth usage on client-side.
 - [X] fov logic
     - [X] VRPlayer read a user fov file and then request video segment with the coordination
     - [X] VRServer response to VRPlayer with fov or a full frame segment
-- [ ] Write script for creating video segments
-    - [ ] Full size video segment
-    - [ ] FOV video segment
-- [ ] efficient gui 
-    - [ ] read [this](https://pavelfatin.com/low-latency-painting-in-awt-and-swing/)
-- [ ] native/optimized decoder
-    - [ ] port to tx2
+- [ ] gapless playback on TX2
+- [ ] integrate with texture mapping for VR reprojection
+    - [ ]
+    - [ ]
+- [X] native/optimized decoder
+    - [X] port to tx2
     - [ ] benchmark
 
 ## Prepare Video Segments
@@ -52,31 +51,25 @@ the path of storage and the video segment name in the main function.
         - File size of each video segment (both FULL and FOV)
     - Interact with VRPlayer using SVR-FOV protocol below
 - VRPlayer
-    - GUI (main thread)
-        - Pop image from a concurrent queue every `x` millisecond and render it, do nothing if the queue is empty
-    - Network + decode (worker thread)
-        - Interact with VRServer using SVR-FOV protocol below
-        - Decode is now waiting for the network stuff (intuitive because we cannot decode until the segment has been downloaded)
+    - Use Gstreamer for hardware decoder on TX2
+    - SVR-FOV protocol
 
 ### SVR-FOV Protocol
 
-| Tables        | VRPlayer                                         | VRServer                   |
-| ------------- |:------------------------------------------------:| --------------------------:|
-| Step 0-1      | -                                                | Send manifest to VRPlayer  |
-| Step 0-2      | Receive manifest from VRServer                   | -                          |
-| Step 1        | Send sensor data (metadata) to VRServer          | -                          |
-| Step 2        | -                                                | Receive sensor data (metadata) from VRPlayer |
-| Step 3        | -                                                | Send size message of video segment to VRPlayer |
-| Step 4        | Receive video segment size message from VRServer | -                          |
-| Step 5        | -                                                | Send video segment to VRPlayer |
-| Step 6        | Receive video segment from VRServer              | - |
-| Step 7 (if size == FOV && no miss)  | Send GOOD to VRServer      | - |
-| Step 7 (if size == FOV && has miss) | Send BAD to VRServer       | - |
-| Step 7 (if size == FULL)            | END                        | END |
-| Step 8        | -                                                | Receive GOOD/BAD from VRPlayer |
-| Step 9 (if server receive BAD)      | - | Send full size video segment to VRPlayer |
-| Step 9 (if server receive GOOD)     | END | END |
-| Step 10       | Download full size video segment from VRServer | END |
+| Tables        | VRPlayer                                         | VRServer (EC2)             | Video Storage (AWS S3) |
+| ------------- |:------------------------------------------------:|:--------------------------:|:----------------------:|
+| Step 0-1      | -                                                | Send manifest to VRPlayer  | -                      |
+| Step 0-2      | Receive manifest from VRServer                   | -                          | -                      |
+| Step 1        | Send sensor data (metadata) to VRServer          | -                          | -                      |
+| Step 2        | -                                                | Receive sensor data (metadata) from VRPlayer | -                        |
+| Step 3        | -                                                | Send size message of video segment to VRPlayer | -                      |
+| Step 4        | Receive video segment size message from VRServer | -                          | -                      |
+| Step 5        | -                                                | -                          | Send video segment to VRPlayer             |
+| Step 6        | Receive video segment from S3              | - | -                      |
+| Step 7 (no miss)  | END      | END | END                      |
+| Step 7 (has miss) | -    | END | Send full size video segment to VRPlayer |
+| Step 7 (if size == FULL) | END | END | END                      |
+| Step 8 (has miss)       | Download full size video segment from S3        | END | END |
 
 ## License
 MIT License
