@@ -79,67 +79,30 @@ public class VRServer implements Runnable {
             if (this.hasSentManifest) {
                 // send video segments
                 for (int segId = 1; segId <= fullSizeManifest.getVideoSegmentAmount(); segId++) {
-                    try {
-                        // Get user fov metadata (only for key frame)
-                        TCPSerializeReceiver<FOVMetadata> fovMetadataTCPSerializeReceiver = new TCPSerializeReceiver<>(ss);
-                        fovMetadataTCPSerializeReceiver.request();
+                    // Get user fov metadata (only for key frame)
+                    TCPSerializeReceiver<FOVMetadata> fovMetadataTCPSerializeReceiver = new TCPSerializeReceiver<>(ss);
+                    fovMetadataTCPSerializeReceiver.request();
 
-                        // Inspect storage fullSizeManifest to know if there is a matched video segment,
-                        // if yes, send the most-match FOV,
-                        // if no, send FULL.
-                        FOVMetadata userFOVMetaData = fovMetadataTCPSerializeReceiver.getSerializeObj();
-                        System.out.println("[[STEP 2 SEGMENT #" + segId + "]] Get user fov: " + userFOVMetaData);
-                        Vector<FOVMetadata> pathMetadataVec = fullSizeManifest.getPredMetaDataVec().get(segId).getPathVec();
-                        int sizeMsg = FOVProtocol.FULL;
-                        for (int i = 0; i < pathMetadataVec.size(); i++) {
-                            FOVMetadata pathMetadata = pathMetadataVec.get(i);
-                            double ratio = pathMetadata.getOverlapRate(userFOVMetaData);
-                            if (ratio >= FOVProtocol.THRESHOLD) {
-                                sizeMsg = i;
-                                break;
-                            }
+                    // Inspect storage fullSizeManifest to know if there is a matched video segment,
+                    // if yes, send the most-match FOV,
+                    // if no, send FULL.
+                    FOVMetadata userFOVMetaData = fovMetadataTCPSerializeReceiver.getSerializeObj();
+                    System.out.println("[[STEP 2 SEGMENT #" + segId + "]] Get user fov: " + userFOVMetaData);
+                    Vector<FOVMetadata> pathMetadataVec = fullSizeManifest.getPredMetaDataVec().get(segId).getPathVec();
+                    int sizeMsg = FOVProtocol.FULL;
+                    for (int i = 0; i < pathMetadataVec.size(); i++) {
+                        FOVMetadata pathMetadata = pathMetadataVec.get(i);
+                        double ratio = pathMetadata.getOverlapRate(userFOVMetaData);
+                        if (ratio >= FOVProtocol.THRESHOLD) {
+                            sizeMsg = i;
+                            break;
                         }
-
-                        TCPSerializeSender<Integer> pathMsgRequest = new TCPSerializeSender<>(this.ss, sizeMsg);
-                        pathMsgRequest.request();
-                        System.out.println("[STEP 3] send video path msg: " + sizeMsg);
-
-                        String videoFileName;
-                        if (sizeMsg == FOVProtocol.FULL) {
-                            videoFileName = Utilities.getServerFullSizeSegmentName(fullSegmentDir, this.storageFilename, segId);
-                        } else {
-                            videoFileName = Utilities.getServerFOVSegmentName(fovSegmentDir, segId, sizeMsg);
-                        }
-                        TCPFileSender tcpFileSender = new TCPFileSender(ss, videoFileName);
-                        tcpFileSender.request();
-                        if (sizeMsg == FOVProtocol.FULL) {
-                            System.out.println("[STEP 5] Send full size: " + videoFileName + " from VRServer");
-                        } else {
-                            System.out.println("[STEP 5] Send fov size: " + videoFileName + " from VRServer");
-                        }
-
-                        // wait for "GOOD" or "BAD" message from VRPlayer
-                        // if GOOD: continue the next iteration
-                        // if BAD: send back full size video segment
-                        if (FOVProtocol.isFOV(sizeMsg)) {
-                            TCPSerializeReceiver<Integer> finReceiver = new TCPSerializeReceiver<>(ss);
-                            finReceiver.request();
-                            int finMsg = finReceiver.getSerializeObj();
-                            System.out.println("[Step 8] Receive final message: " + FOVProtocol.print(finMsg));
-
-                            if (finMsg == FOVProtocol.BAD) {
-                                // send video segment
-                                videoFileName = Utilities.getServerFullSizeSegmentName(fullSegmentDir, this.storageFilename, segId);
-                                tcpFileSender = new TCPFileSender(ss, videoFileName);
-                                tcpFileSender.request();
-                                System.out.println("[STEP 9] Send full size: " + videoFileName + " from VRServer");
-                            }
-                        }
-
-                        System.out.println("---------------------------------------------------------");
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
+
+                    TCPSerializeSender<Integer> pathMsgRequest = new TCPSerializeSender<>(this.ss, sizeMsg);
+                    pathMsgRequest.request();
+                    System.out.println("[STEP 3] send video path msg: " + sizeMsg);
+                    System.out.println("---------------------------------------------------------");
                 }
             } else {
                 // create and write manifest file
