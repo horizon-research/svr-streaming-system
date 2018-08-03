@@ -163,4 +163,18 @@ public class VideoSegmentManifest implements Serializable {
     public Vector<VideoSegmentMetaData> getPredMetaDataVec() {
         return predMetaDataVec;
     }
+
+    /**
+     * Create video segment manifest file.
+     *
+     * @param args Program arguments for creating video segment manifest file.
+     */
+    public static void main(String[] args) {
+        VideoSegmentManifest fullSizeManifest = new VideoSegmentManifest("rhino-full", "rhinos-pred.txt");
+        try {
+            fullSizeManifest.write("rhino-manifest.txt");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

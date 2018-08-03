@@ -1,5 +1,16 @@
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.google.gson.Gson;
+
 import java.io.*;
 import java.net.ServerSocket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Vector;
 
 /**
@@ -7,39 +18,52 @@ import java.util.Vector;
  */
 public class VRServer implements Runnable {
     private static final String fullSizeManifestName = "server-full.txt";
+    private static final String bucketName = "vros-video-segments";
+
     private ServerSocket ss;
-    private String fullSegmentDir;
-    private String fovSegmentDir;
-    private String storageFilename;
-    private String predFilename;
-    private boolean hasSentManifest;
     private VideoSegmentManifest fullSizeManifest;
     private Utilities.Mode mode;
+    private AmazonS3 s3;
 
     /**
      * Setup a VRServer object that waiting for connections from VRPlayer.
      *
      * @param port            port of the VRServer.
-     * @param fullSegmentDir  path to the storage of full size video segments.
-     * @param fovSegmentDir   path to the storage of fov video segments.
-     * @param storageFilename name of video segments.
-     * @param predFilename    path of the object detection file.
      * @param mode            svr or baseline.
      */
-    public VRServer(int port, String fullSegmentDir, String fovSegmentDir,
-                    String storageFilename, String predFilename,
-                    Utilities.Mode mode) {
+    public VRServer(int port, Utilities.Mode mode) {
         // init
-        this.fullSegmentDir = fullSegmentDir;
-        this.fovSegmentDir = fovSegmentDir;
-        this.storageFilename = storageFilename;
-        this.predFilename = predFilename;
         this.mode = mode;
+        this.s3 = new AmazonS3Client();
+        this.s3.setRegion(Region.getRegion(Regions.US_EAST_1));
+
+        downloadFileFromS3ToFileSystem("rhino-manifest.txt", fullSizeManifestName);
+        parseManifest(fullSizeManifestName);
 
         // setup a tcp server socket that waiting for sending files
         try {
             ss = new ServerSocket(port);
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void downloadFileFromS3ToFileSystem(String key, String out) {
+        S3Object s3Object = s3.getObject(new GetObjectRequest(bucketName, key));
+        InputStream in = s3Object.getObjectContent();
+        try {
+            Files.copy(in, Paths.get(out), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void parseManifest(String path) {
+        Gson gson = new Gson();
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
+            fullSizeManifest = gson.fromJson(bufferedReader, VideoSegmentManifest.class);
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -50,7 +74,6 @@ public class VRServer implements Runnable {
     public void run() {
         switch (mode) {
             case BASELINE:
-                runBaselineMode();
                 break;
             case SVR:
                 runSVRProtocol();
@@ -58,76 +81,36 @@ public class VRServer implements Runnable {
         }
     }
 
-    private void sendManifest() {
-        // create and write manifest file
-        fullSizeManifest = new VideoSegmentManifest(fullSegmentDir, predFilename);
-        try {
-            fullSizeManifest.write(fullSizeManifestName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // send the manifest file just created
-        System.out.println("[STEP 0-1] Send fullSizeManifest file to VRPlayer");
-        System.out.println("VideoSegmentManifest file size: " + new File(fullSizeManifestName).length());
-        try {
-            File file = new File(fullSizeManifestName);
-            TCPSerializeSender<Integer> manifestLenSender = new TCPSerializeSender<>(this.ss, (int) file.length());
-            manifestLenSender.request();
-
-            TCPFileSender tcpFileSender = new TCPFileSender(ss, fullSizeManifestName);
-            tcpFileSender.request();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        this.hasSentManifest = true;
-    }
-
-    private void runBaselineMode() {
-        while (true) {
-            if (!hasSentManifest) {
-                sendManifest();
-            } else {
-                break;
-            }
-        }
-    }
-
     private void runSVRProtocol() {
         while (true) {
-            if (this.hasSentManifest) {
-                // send video segments
-                for (int segId = 1; segId <= fullSizeManifest.getVideoSegmentAmount(); segId++) {
-                    // Get user fov metadata (only for key frame)
-                    TCPSerializeReceiver<FOVMetadata> fovMetadataTCPSerializeReceiver = new TCPSerializeReceiver<>(ss);
-                    fovMetadataTCPSerializeReceiver.request();
+            // send video segments
+            for (int segId = 1; segId <= fullSizeManifest.getVideoSegmentAmount(); segId++) {
+                // Get user fov metadata (only for key frame)
+                TCPSerializeReceiver<FOVMetadata> fovMetadataTCPSerializeReceiver = new TCPSerializeReceiver<>(ss);
+                fovMetadataTCPSerializeReceiver.request();
 
-                    // Inspect storage fullSizeManifest to know if there is a matched video segment,
-                    // if yes, send the most-match FOV,
-                    // if no, send FULL.
-                    FOVMetadata userFOVMetaData = fovMetadataTCPSerializeReceiver.getSerializeObj();
-                    System.out.println("[[STEP 2 SEGMENT #" + segId + "]] Get user fov: " + userFOVMetaData);
-                    Vector<FOVMetadata> pathMetadataVec = fullSizeManifest.getPredMetaDataVec().get(segId).getPathVec();
-                    int sizeMsg = FOVProtocol.FULL;
-                    for (int i = 0; i < pathMetadataVec.size(); i++) {
-                        FOVMetadata pathMetadata = pathMetadataVec.get(i);
-                        double ratio = pathMetadata.getOverlapRate(userFOVMetaData);
-                        if (ratio >= FOVProtocol.THRESHOLD) {
-                            sizeMsg = i;
-                            break;
-                        }
+                // Inspect storage fullSizeManifest to know if there is a matched video segment,
+                // if yes, send the most-match FOV,
+                // if no, send FULL.
+                FOVMetadata userFOVMetaData = fovMetadataTCPSerializeReceiver.getSerializeObj();
+                System.out.println("[[STEP 2 SEGMENT #" + segId + "]] Get user fov: " + userFOVMetaData);
+                Vector<FOVMetadata> pathMetadataVec = fullSizeManifest.getPredMetaDataVec().get(segId).getPathVec();
+                int sizeMsg = FOVProtocol.FULL;
+                for (int i = 0; i < pathMetadataVec.size(); i++) {
+                    FOVMetadata pathMetadata = pathMetadataVec.get(i);
+                    double ratio = pathMetadata.getOverlapRate(userFOVMetaData);
+                    if (ratio >= FOVProtocol.THRESHOLD) {
+                        sizeMsg = i;
+                        break;
                     }
-
-                    TCPSerializeSender<Integer> pathMsgRequest = new TCPSerializeSender<>(this.ss, sizeMsg);
-                    pathMsgRequest.request();
-                    System.out.println("[STEP 3] send video path msg: " + sizeMsg);
-                    System.out.println("---------------------------------------------------------");
                 }
-                break;
-            } else {
-                sendManifest();
+
+                TCPSerializeSender<Integer> pathMsgRequest = new TCPSerializeSender<>(this.ss, sizeMsg);
+                pathMsgRequest.request();
+                System.out.println("[STEP 3] send video path msg: " + sizeMsg);
+                System.out.println("---------------------------------------------------------");
             }
+            break;
         }
     }
 
@@ -138,12 +121,7 @@ public class VRServer implements Runnable {
      * @param args command line args.
      */
     public static void main(String[] args) {
-        VRServer vrServer = new VRServer(Integer.parseInt(args[0]),
-                args[1],
-                args[2],
-                args[3],
-                args[4],
-                Utilities.string2mode(args[5]));
+        VRServer vrServer = new VRServer(Integer.parseInt(args[0]), Utilities.string2mode(args[1]));
         vrServer.run();
     }
 }
