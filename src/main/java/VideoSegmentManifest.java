@@ -14,11 +14,9 @@ public class VideoSegmentManifest implements Serializable {
 
     public class VideoSegmentMetaData {
         private Vector<FOVMetadata> pathVec;
-        private long size;
 
-        VideoSegmentMetaData(Vector<FOVMetadata> pathVec, long size) {
+        VideoSegmentMetaData(Vector<FOVMetadata> pathVec) {
             this.pathVec = pathVec;
-            this.size = size;
         }
 
         public Vector<FOVMetadata> getPathVec() {
@@ -42,7 +40,7 @@ public class VideoSegmentManifest implements Serializable {
         this.length = 0;
 
         // padding
-        predMetaDataVec.add(new VideoSegmentMetaData(null, -1L));
+        predMetaDataVec.add(new VideoSegmentMetaData(null));
 
         // Iterate whole file with the name rhino/output_xx.mp4
         if (storageDirectory.exists() && storageDirectory.isDirectory()) {
@@ -55,7 +53,7 @@ public class VideoSegmentManifest implements Serializable {
             });
             for (File f : dirList) {
                 int size = predMetaDataVec.size();
-                predMetaDataVec.add(new VideoSegmentMetaData(fovMetadata2DVec.get(size), f.length()));
+                predMetaDataVec.add(new VideoSegmentMetaData(fovMetadata2DVec.get(size)));
             }
         } else {
             System.err.println(storagePath + " should be a directory!");
@@ -64,8 +62,6 @@ public class VideoSegmentManifest implements Serializable {
 
         this.length = predMetaDataVec.size();
     }
-
-    private int getPathLen(int segId, int pathId) { return predMetaDataVec.get(segId).getPathVec().get(pathId).getFileLength(); }
 
     // parse predict file metadata into fovMetadata2DVec.
     private Vector<Vector<FOVMetadata>> parsePredFile(String predFileName) {
@@ -93,12 +89,7 @@ public class VideoSegmentManifest implements Serializable {
                             fovMetadataVec = new Vector<>();
                         }
                     }
-                    FOVMetadata fovMD = new FOVMetadata(line, FOVProtocol.FOV_SIZE_WIDTH, FOVProtocol.FOV_SIZE_HEIGHT);
-                    String filename = Utilities.getServerFOVSegmentName("storage/rhino-fov", id, pathId);
-                    File vf = new File(filename);
-                    int fileLen = (int) vf.length();
-                    fovMD.setFileLength(fileLen);
-                    fovMetadataVec.add(fovMD);
+                    fovMetadataVec.add(new FOVMetadata(line, FOVProtocol.FOV_SIZE_WIDTH, FOVProtocol.FOV_SIZE_HEIGHT));
                 }
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -120,22 +111,6 @@ public class VideoSegmentManifest implements Serializable {
         writer.write(gson.toJson(this));
         writer.flush();
         writer.close();
-    }
-
-    /**
-     * Get the file length of a specified video segment.
-     *
-     * @param i identifier of video segment.
-     * @return size of video segment.
-     */
-    public long getFullSizeVideoSegmentLength(int i) {
-        assert (i > 0);
-        return predMetaDataVec.get(i).size;
-    }
-
-    public int getFovVideoSegmentLength(int segId, int pathId) {
-        assert (segId > 0 && pathId >= 0);
-        return this.getPathLen(segId, pathId);
     }
 
     /**
@@ -170,11 +145,38 @@ public class VideoSegmentManifest implements Serializable {
      * @param args Program arguments for creating video segment manifest file.
      */
     public static void main(String[] args) {
-        VideoSegmentManifest fullSizeManifest = new VideoSegmentManifest("rhino-full", "rhinos-pred.txt");
-        try {
-            fullSizeManifest.write("rhino-manifest.txt");
-        } catch (IOException e) {
-            e.printStackTrace();
+        String full_size_path;
+        String det_file;
+        String out;
+
+        if (args.length == 1) {
+            full_size_path = args[0] + "-full";
+            det_file = args[0] + ".txt";
+            out = args[0] + "-manifest.txt";
+            VideoSegmentManifest fullSizeManifest = new VideoSegmentManifest(full_size_path, det_file);
+            try {
+                fullSizeManifest.write(out);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Vector<String> name_list = new Vector<>();
+            name_list.add("rhino");
+            name_list.add("elephant");
+            name_list.add("paris");
+            name_list.add("nyc");
+            name_list.add("roller");
+            for (String name : name_list) {
+                full_size_path = name + "-full";
+                det_file = name + ".txt";
+                out = name + "-manifest.txt";
+                VideoSegmentManifest fullSizeManifest = new VideoSegmentManifest(full_size_path, det_file);
+                try {
+                    fullSizeManifest.write(out);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
