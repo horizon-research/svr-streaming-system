@@ -36,23 +36,23 @@ public class VRPlayer {
     /**
      * Construct a VRPlayer object which manage GUI, video segment downloading, and video segment decoding
      *
-     * @param host        host of VRServer.
-     * @param port        port to VRServer.
-     * @param segmentPath path to the storage of video segments in a temporary path like tmp/.
-     * @param trace       path of a user field-of-view trace file.
+     * @param host        Host of VRServer.
+     * @param port        Port of VRServer.
+     * @param segmentPath Path to the storage of video segments in a temporary path like tmp/.
+     * @param name        Name of the video.
      */
-    public VRPlayer(String host, int port, String segmentPath, String trace, String fullSegmentDir,
-                    String fovSegmentDir, String manifestFileName, Utilities.Mode mode) {
+    public VRPlayer(String host, int port, String segmentPath, String name, Utilities.Mode mode) {
         // init vars
         this.host = host;
         this.port = port;
         this.segmentPath = segmentPath;
         this.currSegId = SEGMENT_START_NUM;
-        this.fovTraces = new FOVTraces(trace);
+        this.fovTraces = new FOVTraces(name + "-trace.txt");
         this.s3 = new AmazonS3Client();
         this.s3.setRegion(Region.getRegion(Regions.US_EAST_1));
-        this.fullSegmentDir = fullSegmentDir;
-        this.fovSegmentDir = fovSegmentDir;
+        this.fullSegmentDir = name + "-full";
+        this.fovSegmentDir = name + "-fov";
+        String manifestFileName = name + "-manifest.txt";
 
         File segmentDir = new File(segmentPath);
         if (!segmentDir.exists()) {
@@ -198,7 +198,7 @@ public class VRPlayer {
     }
 
     /**
-     * Example: java VRPlayer localhost 1988 tmp segment user-fov-trace.txt
+     * Example: java VRPlayer localhost 1988 tmp rhino SVR
      *
      * @param args command line args.
      */
@@ -207,9 +207,6 @@ public class VRPlayer {
                 Integer.parseInt(args[1]),
                 args[2],
                 args[3],
-                args[4],
-                args[5],
-                args[6],
-                Utilities.string2mode(args[7]));
+                Utilities.string2mode(args[4]));
     }
 }

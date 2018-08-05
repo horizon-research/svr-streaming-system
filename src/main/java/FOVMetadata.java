@@ -11,7 +11,6 @@ public class FOVMetadata implements Serializable {
     private int y;
     private int width;
     private int height;
-    private int fileLength;
 
     /**
      * Construct FOVMetadata object by parsing a string line.
@@ -28,7 +27,6 @@ public class FOVMetadata implements Serializable {
         this.y = Integer.parseInt(coord[1]);
         this.width = Integer.parseInt(coord[2]);
         this.height = Integer.parseInt(coord[3]);
-        this.fileLength = -1;
     }
 
     /**
@@ -57,25 +55,18 @@ public class FOVMetadata implements Serializable {
                 this.x = FOVProtocol.FULL_SIZE_WIDTH - width;
             }
         }
-        if (this.x + width > FOVProtocol.FULL_SIZE_WIDTH) {
+        else if (this.x + width > FOVProtocol.FULL_SIZE_WIDTH) {
             this.x = FOVProtocol.FULL_SIZE_WIDTH - width;
         }
-        if (this.y + height > FOVProtocol.FULL_SIZE_HEIGHT - height) {
+        if (this.y < 0) {
+            this.y = 0;
+        }
+        else if (this.y + height > FOVProtocol.FULL_SIZE_HEIGHT - height) {
             this.y = FOVProtocol.FULL_SIZE_HEIGHT - height;
         }
 
         this.width = width;
         this.height = height;
-        this.fileLength = -1;
-    }
-
-    /**
-     * Set fov file length for the fov object.
-     *
-     * @param len Length of a fov video segment.
-     */
-    public void setFileLength(int len) {
-        this.fileLength = len;
     }
 
     /**
@@ -147,10 +138,6 @@ public class FOVMetadata implements Serializable {
             assert (false);
         }
         return ratio;
-    }
-
-    public int getFileLength() {
-        return this.fileLength;
     }
 
     @Override

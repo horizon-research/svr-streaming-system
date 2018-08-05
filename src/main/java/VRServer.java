@@ -24,20 +24,23 @@ public class VRServer implements Runnable {
     private VideoSegmentManifest fullSizeManifest;
     private Utilities.Mode mode;
     private AmazonS3 s3;
+    private String manifestFilename;
 
     /**
      * Setup a VRServer object that waiting for connections from VRPlayer.
      *
-     * @param port            port of the VRServer.
-     * @param mode            svr or baseline.
+     * @param port            Port of the VRServer.
+     * @param filename        Name of the video.
+     * @param mode            Choose which mode to run, SVR or BASELINE for now.
      */
-    public VRServer(int port, Utilities.Mode mode) {
+    public VRServer(int port, String filename, Utilities.Mode mode) {
         // init
         this.mode = mode;
         this.s3 = new AmazonS3Client();
         this.s3.setRegion(Region.getRegion(Regions.US_EAST_1));
+        this.manifestFilename = filename + "-manifest.txt";
 
-        downloadFileFromS3ToFileSystem("rhino-manifest.txt", fullSizeManifestName);
+        downloadFileFromS3ToFileSystem(manifestFilename, fullSizeManifestName);
         parseManifest(fullSizeManifestName);
 
         // setup a tcp server socket that waiting for sending files
@@ -121,7 +124,7 @@ public class VRServer implements Runnable {
      * @param args command line args.
      */
     public static void main(String[] args) {
-        VRServer vrServer = new VRServer(Integer.parseInt(args[0]), Utilities.string2mode(args[1]));
+        VRServer vrServer = new VRServer(Integer.parseInt(args[0]), args[1], Utilities.string2mode(args[2]));
         vrServer.run();
     }
 }
