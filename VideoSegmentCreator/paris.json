@@ -1,0 +1,20 @@
+[
+  {
+    "frame_start": 1,
+    "frame_end": 318,
+    "size": 0,
+    "cluster": []
+  },
+  {
+    "frame_start": 319,
+    "frame_end": 1544,
+    "size": 5,
+    "cluster": [0, 1, 2, 3, 4]
+  },
+  {
+    "frame_start": 1545,
+    "frame_end": 14629,
+    "size": 14,
+    "cluster": [0, 1, 2, 3, 4, 5, 6, 7]
+  }
+]
