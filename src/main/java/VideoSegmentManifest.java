@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.Vector;
 
+// TODO fix for paris and nyc
+
 /**
  * This class handles the creation and parsing of manifest files. The manifest file includes the file size of all the
  * video segments.
@@ -53,6 +55,7 @@ public class VideoSegmentManifest implements Serializable {
             });
             for (File f : dirList) {
                 int size = predMetaDataVec.size();
+                //System.out.println("gg " + Utilities.getIdFromFullSizeSegmentName(f.getName()));
                 predMetaDataVec.add(new VideoSegmentMetaData(fovMetadata2DVec.get(size)));
             }
         } else {

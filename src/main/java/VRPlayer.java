@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.google.gson.Gson;
+import sun.rmi.runtime.Log;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -17,7 +18,6 @@ import java.util.Vector;
  * of fov-logic.
  */
 public class VRPlayer {
-    private static final int TOTAL_SEG_FRAME = 10;
     private static final int SEGMENT_START_NUM = 1;
     private static final String MANIFEST_PATH = "client-full.txt";
     private static final String bucketName = "vros-video-segments";
@@ -32,6 +32,7 @@ public class VRPlayer {
     private VideoSegmentManifest manifest;
     private FOVTraces fovTraces;    // use currSegId to extract fov from fovTraces
     private AmazonS3 s3;
+    private Logger logger;
 
     /**
      * Construct a VRPlayer object which manage GUI, video segment downloading, and video segment decoding
@@ -41,7 +42,7 @@ public class VRPlayer {
      * @param segmentPath Path to the storage of video segments in a temporary path like tmp/.
      * @param name        Name of the video.
      */
-    public VRPlayer(String host, int port, String segmentPath, String name, Utilities.Mode mode) {
+    public VRPlayer(String host, int port, String segmentPath, String name, Utilities.Mode mode, Logger logger) {
         // init vars
         this.host = host;
         this.port = port;
@@ -53,6 +54,7 @@ public class VRPlayer {
         this.fullSegmentDir = name + "-full";
         this.fovSegmentDir = name + "-fov";
         String manifestFileName = name + "-manifest.txt";
+        this.logger = logger;
 
         File segmentDir = new File(segmentPath);
         if (!segmentDir.exists()) {
@@ -68,10 +70,10 @@ public class VRPlayer {
                 break;
             case SVR:
                 SVRNetworkHandler();
-                System.out.println("[STEP 0-2] Receive manifest from VRServer");
+                logger.printProtocol("[STEP 0-2] Receive manifest from VRServer");
                 break;
             default:
-                System.err.println("Should specify mode SVR or BASELINE");
+                logger.printErr("Should specify mode SVR or BASELINE");
                 System.exit(1);
         }
     }
@@ -102,7 +104,7 @@ public class VRPlayer {
             String clientVideoFilename = Utilities.getClientFullSegmentName(segmentPath, currSegId);
             downloadFileFromS3ToFileSystem(s3videoFileName, clientVideoFilename);
             new PlayNative(clientVideoFilename, 0, -1);
-            System.out.println("[STEP 1] SEGMENT #" + currSegId);
+            logger.printProtocol("[STEP 1] SEGMENT #" + currSegId);
         }
     }
 
@@ -122,23 +124,22 @@ public class VRPlayer {
     private void SVRNetworkHandler() {
         while (currSegId <= manifest.getVideoSegmentAmount()) {
             // 1. request fov with the key frame metadata from VRServer
-            // TODO suppose one video segment have 10 frames temporarily, check out storage/segment.py
-            int keyFrameID = (currSegId - 1) * TOTAL_SEG_FRAME;
+            int keyFrameID = (currSegId - 1) * FRAME_PER_VIDEO_SEGMENT;
             TCPSerializeSender metadataRequest = new TCPSerializeSender<>(host, port, fovTraces.get(keyFrameID));
             metadataRequest.request();
-            System.out.println("[STEP 1] SEGMENT #" + currSegId + " send metadata to server");
+            logger.printProtocol("[STEP 1] SEGMENT #" + currSegId + " send metadata to server");
 
             // 2. get response from VRServer which indicate "FULL" or "FOV"
             TCPSerializeReceiver msgReceiver = new TCPSerializeReceiver<Integer>(host, port);
             msgReceiver.request();
             int predPathMsg = (Integer) msgReceiver.getSerializeObj();
-            System.out.println("[STEP 4] get size message: " + FOVProtocol.print(predPathMsg));
+            logger.printProtocol("[STEP 4] get size message: " + FOVProtocol.print(predPathMsg));
 
             // 3-1. check whether the other video frames (exclude key frame) does not match fov
             // 3-2. if any frame does not match, request full size video segment from VRServer with "BAD"
             // 3-2  if all the frames matches, send back "GOOD"
             if (FOVProtocol.isFOV(predPathMsg)) {
-                System.out.println("[STEP 6] download video segment from VRServer");
+                logger.printProtocol("[STEP 6] download video segment from VRServer");
                 String s3videoFileName = getS3KeyName(predPathMsg);
                 String clientVideoFilename = Utilities.getClientFOVSegmentName(segmentPath, currSegId, predPathMsg);
 
@@ -155,10 +156,10 @@ public class VRPlayer {
                     FOVMetadata userFov = fovTraces.get(keyFrameID);
                     double coverRatio = pathMetadata.getOverlapRate(userFov);
                     if (coverRatio < FOVProtocol.THRESHOLD) {
-                        System.out.println("[DEBUG] fail at keyFrameID: " + keyFrameID);
-                        System.out.println("[DEBUG] user fov: " + userFov);
-                        System.out.println("[DEBUG] path metadata: " + pathMetadata);
-                        System.out.println("[DEBUG] overlap ratio: " + coverRatio);
+                        logger.printProtocol("[DEBUG] fail at keyFrameID: " + keyFrameID);
+                        logger.printProtocol("[DEBUG] user fov: " + userFov);
+                        logger.printProtocol("[DEBUG] path metadata: " + pathMetadata);
+                        logger.printProtocol("[DEBUG] overlap ratio: " + coverRatio);
                         secondDownloadMsg = FOVProtocol.BAD;
                         break;
                     } else {
@@ -173,16 +174,16 @@ public class VRPlayer {
 
                 // receive full size video segment if send back BAD
                 if (secondDownloadMsg == FOVProtocol.BAD) {
-                    System.out.println("[STEP 10] Download full size video segment from VRServer");
+                    logger.printProtocol("[STEP 10] Download full size video segment from VRServer");
                     s3videoFileName = getS3KeyName(FOVProtocol.FULL);
                     clientVideoFilename = Utilities.getClientFullSegmentName(segmentPath, currSegId);
                     downloadFileFromS3ToFileSystem(s3videoFileName, clientVideoFilename);
 
-                    System.out.println("[DEBUG] Start decode from frame: " + totalDecodedFrame);
+                    logger.printProtocol("[DEBUG] Start decode from frame: " + totalDecodedFrame);
                     new PlayNative(clientVideoFilename, totalDecodedFrame, -1);
                 }
             } else if (FOVProtocol.isFull(predPathMsg)) {
-                System.out.println("[STEP 6] download video segment from VRServer");
+                logger.printProtocol("[STEP 6] download video segment from VRServer");
                 String s3videoFileName = getS3KeyName(FOVProtocol.FULL);
                 String clientVideoFilename = Utilities.getClientFullSegmentName(segmentPath, currSegId);
                 downloadFileFromS3ToFileSystem(s3videoFileName, clientVideoFilename);
@@ -192,7 +193,7 @@ public class VRPlayer {
                 assert (false);
             }
 
-            System.out.println("---------------------------------------------------------");
+            logger.printProtocol("---------------------------------------------------------");
             currSegId++;
         }
     }
@@ -203,10 +204,12 @@ public class VRPlayer {
      * @param args command line args.
      */
     public static void main(String[] args) {
+        Logger logger = new Logger(true, true, false);
         VRPlayer vrPlayer = new VRPlayer(args[0],
                 Integer.parseInt(args[1]),
                 args[2],
                 args[3],
-                Utilities.string2mode(args[4]));
+                Utilities.string2mode(args[4]),
+                logger);
     }
 }
