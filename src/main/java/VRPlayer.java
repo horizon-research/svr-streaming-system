@@ -143,7 +143,9 @@ public class VRPlayer {
                 String s3videoFileName = getS3KeyName(predPathMsg);
                 String clientVideoFilename = Utilities.getClientFOVSegmentName(segmentPath, currSegId, predPathMsg);
 
+                logger.startLogTime();
                 downloadFileFromS3ToFileSystem(s3videoFileName, clientVideoFilename);
+                logger.endLogAndPrint();
 
                 // compare all the user-fov frames exclude for key frame with the predicted fov
                 Vector<FOVMetadata> pathMetadataVec = manifest.getPredMetaDataVec().get(currSegId).getPathVec();
@@ -177,7 +179,10 @@ public class VRPlayer {
                     logger.printProtocol("[STEP 10] Download full size video segment from VRServer");
                     s3videoFileName = getS3KeyName(FOVProtocol.FULL);
                     clientVideoFilename = Utilities.getClientFullSegmentName(segmentPath, currSegId);
+
+                    logger.startLogTime();
                     downloadFileFromS3ToFileSystem(s3videoFileName, clientVideoFilename);
+                    logger.endLogAndPrint();
 
                     logger.printProtocol("[DEBUG] Start decode from frame: " + totalDecodedFrame);
                     new PlayNative(clientVideoFilename, totalDecodedFrame, -1);
@@ -186,7 +191,10 @@ public class VRPlayer {
                 logger.printProtocol("[STEP 6] download video segment from VRServer");
                 String s3videoFileName = getS3KeyName(FOVProtocol.FULL);
                 String clientVideoFilename = Utilities.getClientFullSegmentName(segmentPath, currSegId);
+
+                logger.startLogTime();
                 downloadFileFromS3ToFileSystem(s3videoFileName, clientVideoFilename);
+                logger.endLogAndPrint();
                 new PlayNative(clientVideoFilename, 0, -1);
             } else {
                 // should never go here
@@ -204,7 +212,7 @@ public class VRPlayer {
      * @param args command line args.
      */
     public static void main(String[] args) {
-        Logger logger = new Logger(true, true, false);
+        Logger logger = new Logger(false, true, false);
         VRPlayer vrPlayer = new VRPlayer(args[0],
                 Integer.parseInt(args[1]),
                 args[2],

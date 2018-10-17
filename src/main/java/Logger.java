@@ -3,6 +3,8 @@ public class Logger {
     private boolean printLat;
     private boolean printError;
 
+    private long start;
+
     public Logger(boolean printProto, boolean printLat, boolean printError) {
         this.printProto = printProto;
         this.printLat = printLat;
@@ -15,9 +17,15 @@ public class Logger {
         }
     }
 
-    public void printLatency(String s) {
+    public void startLogTime() {
+        this.start = System.nanoTime();
+    }
+
+    public void endLogAndPrint() {
+        long elapsed = System.nanoTime() - this.start;
+        this.start = 0L;
         if (printLat) {
-            System.out.println(s);
+            System.out.println(Double.toString((double) elapsed / 1000000000.0));
         }
     }
 
