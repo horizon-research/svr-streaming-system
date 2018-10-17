@@ -1,6 +1,7 @@
 # SVR Streaming System
-Make use of object semantics in virtual reality video to optimize the power-consumption
-and bandwidth usage on client-side.
+- This repository is for implementing the system mentioned in APSys '18 workshop paper: [Semantic-Aware Virtual Reality Video Streaming](https://dl.acm.org/citation.cfm?id=3265738).
+- General idea
+    - Make use of object semantics in virtual reality video to optimize the power-consumption and bandwidth usage on client-side.
 
 ## TODO
 - [X] basic streaming system support using a manifest file to request for video segment
@@ -8,41 +9,27 @@ and bandwidth usage on client-side.
     - [X] VRPlayer read a user fov file and then request video segment with the coordination
     - [X] VRServer response to VRPlayer with fov or a full frame segment
 - [ ] gapless playback on TX2
+    - [ ] Nvidia does not provide seamless playback for gst-play on TX2 so it's not able to implement this part right now...
 - [ ] integrate with texture mapping for VR reprojection
-    - [ ]
-    - [ ]
 - [X] native/optimized decoder
     - [X] port to tx2
-    - [ ] benchmark
-
-## Prepare Video Segments
-```
-mkdir tmp/
-mkdir storage/rhino
-cd storage
-# this may take around 10 to 20 mintues, so be patient...
-python3 segment.py rhino.mp4 100 rhino/output
-cd ..
-```
 
 ## Usage
 Run VRServer first and then launch VRPlayer. If there is any error, it might due to
 the path of storage and the video segment name in the main function.
 
 ## Compilation
-- this repository now has only been tested on ubuntu 16.04
-- install openjdk version > 1.8
-- install maven
+- This repository now has only been tested on ubuntu 16.04
+- Install openjdk version >= 1.8
+- Install maven
     - sudo apt-get install mvn
     - if mvn doesn't work, replace it with maven
-- mvn package
-- prepare resources
-    - see the Prepare Video Segment part
-    - cp -r storage/ target/
+    - `mvn package`
+- Get S3 Key and put it in `~/.aws/credentials`
 - VRServer
-    - `java -jar vrserver.jar 1988 storage/rhino output storage/rhinos-pred.txt SVR`
+    - `java -jar vrserver.jar 1988 elephant SVR`
 - VRPlayer
-    - `java -jar vrplayer.jar localhost 1988 tmp segment user-fov-trace.txt SVR`
+    - `java -jar vrplayer.jar localhost 1988 tmp rhino SVR`
     
 ## Implementation
 - VRServer
@@ -53,6 +40,8 @@ the path of storage and the video segment name in the main function.
 - VRPlayer
     - Use Gstreamer for hardware decoder on TX2
     - SVR-FOV protocol
+- S3
+    - VRPlayer use the manifest file that downloaded from VRServer to request the file on Amazon-S3
 
 ### SVR-FOV Protocol
 
